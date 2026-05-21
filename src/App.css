@@ -35,7 +35,7 @@ html, body, #root {
   padding: 24px;
 }
 
-.shell-selector h1 {
+.selector-header h1 {
   font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -139,6 +139,25 @@ html, body, #root {
   color: #f66;
 }
 
+/* -- Font Picker -- */
+
+.font-picker {
+  background: #1e1e34;
+  border: 1px solid #3a3a4e;
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 12px;
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.font-picker:hover,
+.font-picker:focus {
+  border-color: #5a5a7e;
+}
+
 /* -- Terminal Container -- */
 
 .terminal-container {
@@ -168,4 +187,184 @@ html, body, #root {
   justify-content: center;
   color: #666;
   font-size: 14px;
+}
+
+/* -- Shell Selector Header & Gear -- */
+
+.selector-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selector-header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #f0f0f0;
+}
+
+.settings-gear {
+  background: none;
+  border: 1px solid #3a3a4e;
+  border-radius: 6px;
+  color: #666;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.settings-gear:hover {
+  color: #ccc;
+  border-color: #5a5a7e;
+  background: #1e1e34;
+}
+
+/* -- Settings Page -- */
+
+.settings-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #2a2a3e;
+  flex-shrink: 0;
+}
+
+.settings-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #f0f0f0;
+}
+
+.back-btn {
+  background: none;
+  border: 1px solid #3a3a4e;
+  border-radius: 6px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 12px;
+  font-size: 13px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.back-btn:hover {
+  background: #1e1e34;
+  color: #ccc;
+  border-color: #5a5a7e;
+}
+
+.settings-body {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 500px;
+}
+
+.setting-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setting-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.setting-row .font-picker {
+  width: 100%;
+  background: #1a1a2e;
+  border: 1px solid #3a3a4e;
+  border-radius: 6px;
+  color: #ddd;
+  font-size: 13px;
+  padding: 8px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.setting-row .font-picker:hover,
+.setting-row .font-picker:focus {
+  border-color: #5a5a7e;
+}
+
+.size-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.size-control input[type="range"] {
+  flex: 1;
+  accent-color: #64b5f6;
+  height: 4px;
+  cursor: pointer;
+}
+
+.size-value {
+  font-size: 14px;
+  color: #ccc;
+  min-width: 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.preview-box {
+  background: #0e0e1a;
+  border: 1px solid #2a2a3e;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-top: 4px;
+}
+
+.preview-header {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.settings-error {
+  color: #e55;
+  font-size: 13px;
+  margin: 0;
+}
+
+.save-btn {
+  align-self: flex-start;
+  background: #2a4a6e;
+  border: none;
+  border-radius: 6px;
+  color: #f0f0f0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 28px;
+  transition: background 0.15s;
+}
+
+.save-btn:hover {
+  background: #3a5a8e;
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }

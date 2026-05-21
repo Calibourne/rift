@@ -11,9 +11,10 @@ export interface ShellInfo {
 
 interface Props {
   onSelect: (shell: ShellInfo) => void;
+  onSettings: () => void;
 }
 
-export default function ShellSelector({ onSelect }: Props) {
+export default function ShellSelector({ onSelect, onSettings }: Props) {
   const [shells, setShells] = useState<ShellInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,7 +26,12 @@ export default function ShellSelector({ onSelect }: Props) {
 
   return (
     <div className="shell-selector">
-      <h1>Aether</h1>
+      <div className="selector-header">
+        <h1>Aether</h1>
+        <button className="settings-gear" onClick={onSettings} title="Settings">
+          ⚙
+        </button>
+      </div>
       <p className="subtitle">Choose a shell to launch</p>
 
       {error && <p style={{ color: "#e55", fontSize: 13 }}>{error}</p>}

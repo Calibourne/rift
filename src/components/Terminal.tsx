@@ -8,10 +8,18 @@ import "@xterm/xterm/css/xterm.css";
 interface Props {
   ptyId: string;
   shellName: string;
+  fontFamily: string;
+  fontSize: number;
   onClose: () => void;
 }
 
-export default function TerminalEmulator({ ptyId, shellName, onClose }: Props) {
+export default function TerminalEmulator({
+  ptyId,
+  shellName,
+  fontFamily,
+  fontSize,
+  onClose,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
   const fitRef = useRef<FitAddon | null>(null);
@@ -28,9 +36,8 @@ export default function TerminalEmulator({ ptyId, shellName, onClose }: Props) {
     const term = new Terminal({
       cursorBlink: true,
       cursorStyle: "block",
-      fontSize: 14,
-      fontFamily:
-        "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Victor Mono', Menlo, Monaco, 'Courier New', monospace",
+      fontSize,
+      fontFamily,
       theme: {
         background: "#0e0e1a",
         foreground: "#d0d0d0",
@@ -123,6 +130,30 @@ export default function TerminalEmulator({ ptyId, shellName, onClose }: Props) {
       fitRef.current = null;
     };
   }, [ptyId, onClose]);
+
+  // --- sync font / size changes to live terminal ---
+  useEffect(() => {
+    const term = termRef.current;
+    if (term) {
+      term.options.fontFamily = fontFamily;
+    }
+  }, [fontFamily]);
+
+  useEffect(() => {
+    const term = termRef.current;
+    const fit = fitRef.current;
+    if (term && fit) {
+      term.options.fontSize = fontSize;
+      // re-fit after size change so layout adjusts
+      requestAnimationFrame(() => {
+        try {
+          fit.fit();
+        } catch {
+          /* ignore */
+        }
+      });
+    }
+  }, [fontSize]);
 
   // --- re-fit when the container changes size (window resize, etc.) ---
   const fitTerm = useCallback(() => {

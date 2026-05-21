@@ -1,5 +1,5 @@
 use serde::Serialize;
-use std::path::PathBuf;
+use std::char::decode_utf16;
 
 /// Information about a detected shell.
 #[derive(Debug, Clone, Serialize)]
@@ -96,7 +96,7 @@ pub fn detect_shells() -> Vec<ShellInfo> {
     if let Some(p) = which_in_path("pwsh.exe") {
         shells.push(ShellInfo {
             name: "PowerShell 7".into(),
-            path: p,
+            path: p.clone(),
             icon: "\u{1f4e6}".into(),
             version: probe_version(&p),
             args: vec![],
@@ -160,25 +160,34 @@ fn detect_wsl_distros(shells: &mut Vec<ShellInfo>) {
 
     match output {
         Ok(out) if out.status.success() => {
-            let stdout = String::from_utf8_lossy(&out.stdout);
+            // wsl.exe outputs UTF-16LE — decode properly.
+            let stdout = decode_utf16le(&out.stdout);
             for line in stdout.lines() {
                 let distro = line.trim();
-                if distro.is_empty() || distro.eq_ignore_ascii_case("docker-desktop") || distro.eq_ignore_ascii_case("docker-desktop-data") {
+                if distro.is_empty()
+                    || distro.eq_ignore_ascii_case("docker-desktop")
+                    || distro.eq_ignore_ascii_case("docker-desktop-data")
+                {
                     continue;
                 }
-                // Determine which shell is default inside the distro.
-                let shell_path = probe_wsl_default_shell(distro);
+
                 let name = format!("WSL: {distro}");
+
+                // Let WSL launch the distro's own default login shell.
+                // WSL always starts as a login shell — no need to probe
+                // for a specific shell path or pass --login ourselves.
+                let args: Vec<String> = vec![
+                    "~".into(),          // start in WSL home
+                    "-d".into(),          // target this distro
+                    distro.to_string(),
+                ];
+
                 shells.push(ShellInfo {
                     name,
                     path: "wsl.exe".into(),
                     icon: "\u{1f4e6}".into(),
                     version: distro.to_string(),
-                    args: if shell_path.is_empty() {
-                        vec!["~".into(), "-d".into(), distro.to_string(), "--".into(), "bash".into(), "--login".into()]
-                    } else {
-                        vec!["~".into(), "-d".into(), distro.to_string(), "--".into(), shell_path, "--login".into()]
-                    },
+                    args,
                 });
             }
         }
@@ -189,22 +198,6 @@ fn detect_wsl_distros(shells: &mut Vec<ShellInfo>) {
             // wsl.exe not found.
         }
     }
-}
-
-#[cfg(target_os = "windows")]
-fn probe_wsl_default_shell(distro: &str) -> String {
-    let output = std::process::Command::new("wsl.exe")
-        .args(["-d", distro, "--", "echo", "$SHELL"])
-        .output();
-    if let Ok(out) = output {
-        if out.status.success() {
-            let s = String::from_utf8_lossy(&out.stdout).trim().to_string();
-            if !s.is_empty() && s != "/bin/sh" {
-                return s;
-            }
-        }
-    }
-    String::new()
 }
 
 #[cfg(target_os = "windows")]
@@ -222,6 +215,18 @@ fn which_in_path(name: &str) -> Option<String> {
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
+
+/// Decode a UTF-16LE byte buffer into a `String`, replacing ill-formed sequences
+/// with U+FFFD.  This is needed because `wsl.exe --list --quiet` outputs UTF‑16LE.
+fn decode_utf16le(bytes: &[u8]) -> String {
+    let u16s: Vec<u16> = bytes
+        .chunks_exact(2)
+        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+        .collect();
+    decode_utf16(u16s.into_iter().map(|c| c))
+        .map(|r| r.unwrap_or(char::REPLACEMENT_CHARACTER))
+        .collect()
+}
 
 /// Run `<shell> --version` and return stdout (first two lines).
 fn probe_version(path: &str) -> String {

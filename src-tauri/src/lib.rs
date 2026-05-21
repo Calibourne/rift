@@ -1,4 +1,5 @@
 mod commands;
+mod config;
 mod pty;
 mod shells;
 
@@ -15,6 +16,8 @@ pub fn run() {
             commands::write_pty,
             commands::resize_pty,
             commands::kill_pty,
+            config::get_settings,
+            config::update_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running aether");
