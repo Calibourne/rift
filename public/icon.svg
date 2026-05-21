@@ -1,0 +1,56 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="aetherGradient" x1="40" y1="40" x2="216" y2="216" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7DD3FC"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="256" height="256" rx="52" fill="#0B1020"/>
+
+  <!-- Outer orbital -->
+  <path
+    d="M52 132C52 82 88 48 128 48C170 48 204 78 204 124C204 176 168 208 126 208C90 208 60 184 54 146"
+    stroke="url(#aetherGradient)"
+    stroke-width="14"
+    stroke-linecap="round"
+    filter="url(#glow)"
+  />
+
+  <!-- Inner flowing arc -->
+  <path
+    d="M92 162L128 86L164 162"
+    stroke="url(#aetherGradient)"
+    stroke-width="14"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#glow)"
+  />
+
+  <!-- Cross-flow -->
+  <path
+    d="M108 132H148"
+    stroke="url(#aetherGradient)"
+    stroke-width="12"
+    stroke-linecap="round"
+    filter="url(#glow)"
+  />
+
+  <!-- Ambient signal dot -->
+  <circle
+    cx="188"
+    cy="82"
+    r="7"
+    fill="#7DD3FC"
+    filter="url(#glow)"
+  />
+</svg>
