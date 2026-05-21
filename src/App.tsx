@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import ShellSelector, { type ShellInfo } from "./components/ShellSelector";
 import TerminalEmulator from "./components/Terminal";
 import Settings, { type AppSettings } from "./components/Settings";
+import type { PartialAppSettings } from "./components/Settings";
 
 type Phase = "select" | "terminal" | "settings";
 
@@ -62,6 +63,15 @@ function App() {
     setPhase("select");
   }, []);
 
+  const handleSettingsChange = useCallback((patch: PartialAppSettings) => {
+    setSettings((prev) => {
+      const next = { ...prev, ...patch };
+      // persist immediately
+      invoke("update_settings", { settings: next }).catch(console.error);
+      return next;
+    });
+  }, []);
+
   return (
     <div className="app">
       {phase === "select" && (
@@ -77,6 +87,7 @@ function App() {
           fontFamily={settings.font_family}
           fontSize={settings.font_size}
           onClose={handleTerminalClose}
+          onSettingsChange={handleSettingsChange}
         />
       )}
       {phase === "settings" && (

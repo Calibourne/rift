@@ -1,9 +1,11 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
+import { FONT_OPTIONS } from "../fonts";
+import type { PartialAppSettings } from "./Settings";
 
 interface Props {
   ptyId: string;
@@ -11,6 +13,7 @@ interface Props {
   fontFamily: string;
   fontSize: number;
   onClose: () => void;
+  onSettingsChange?: (patch: PartialAppSettings) => void;
 }
 
 export default function TerminalEmulator({
@@ -19,8 +22,11 @@ export default function TerminalEmulator({
   fontFamily,
   fontSize,
   onClose,
+  onSettingsChange,
 }: Props) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
   const fitRef = useRef<FitAddon | null>(null);
   const ptyIdRef = useRef(ptyId);
@@ -29,6 +35,22 @@ export default function TerminalEmulator({
   useEffect(() => {
     ptyIdRef.current = ptyId;
   }, [ptyId]);
+
+  // --- close settings panel on outside click ---
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setSettingsOpen(false);
+      }
+    };
+    // delay to avoid the toggle click itself triggering close
+    const id = setTimeout(() => document.addEventListener("mousedown", handler), 0);
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener("mousedown", handler);
+    };
+  }, [settingsOpen]);
 
   // --- lifecycle: create / destroy xterm ---
   useEffect(() => {
@@ -192,10 +214,54 @@ export default function TerminalEmulator({
         <div className="tab">
           <span>{shellName}</span>
         </div>
-        <button className="close-btn" onClick={onClose}>
-          Close
-        </button>
+        <div className="toolbar-right">
+          <button
+            className={`settings-toggle-btn${settingsOpen ? " active" : ""}`}
+            onClick={() => setSettingsOpen((o) => !o)}
+            title="Terminal settings"
+          >
+            ⚙
+          </button>
+          <button className="close-btn" onClick={onClose}>
+            Close
+          </button>
+        </div>
       </div>
+
+      {settingsOpen && (
+        <div className="terminal-settings-panel" ref={settingsRef}>
+          <label className="ts-setting">
+            <span className="ts-label">Font</span>
+            <select
+              className="ts-select"
+              value={fontFamily}
+              onChange={(e) => onSettingsChange?.({ font_family: e.target.value })}
+            >
+              {FONT_OPTIONS.map((f) => (
+                <option key={f.value} value={f.value}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="ts-setting">
+            <span className="ts-label">Size</span>
+            <div className="ts-size-control">
+              <input
+                type="range"
+                min={10}
+                max={24}
+                step={1}
+                value={fontSize}
+                onChange={(e) => onSettingsChange?.({ font_size: Number(e.target.value) })}
+              />
+              <span className="ts-size-value">{fontSize}px</span>
+            </div>
+          </label>
+        </div>
+      )}
+
       <div className="terminal-container" ref={containerRef} />
     </>
   );

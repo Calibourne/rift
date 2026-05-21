@@ -7,6 +7,8 @@ export interface AppSettings {
   font_size: number;
 }
 
+export type PartialAppSettings = Partial<AppSettings>;
+
 interface Props {
   currentSettings: AppSettings;
   onSave: (settings: AppSettings) => void;
