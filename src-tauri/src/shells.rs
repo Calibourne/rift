@@ -31,12 +31,12 @@ pub fn detect_shells() -> Vec<ShellInfo> {
                 path: path.to_string(),
                 icon: icon.to_string(),
                 version,
-                args: args.to_vec(),
+                args: args.iter().map(|s| s.to_string()).collect(),
             };
 
             // Mark the user's default shell.
-            if let Some(ref def) = default_shell {
-                if *def == path {
+            if let Some(def) = &default_shell {
+                if def.as_str() == *path {
                     info.name.push_str(" (default)");
                 }
             }

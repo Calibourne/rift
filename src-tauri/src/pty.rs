@@ -9,7 +9,7 @@ use uuid::Uuid;
 /// A running PTY session.
 pub struct PtySession {
     /// The child process handle (kept alive).
-    _child: Box<dyn portable_pty::Child + Send>,
+    _child: Box<dyn portable_pty::Child + Send + Sync>,
     /// The master PTY handle — kept alive for resize.
     _master: Box<dyn portable_pty::MasterPty + Send>,
     /// Write end — send keyboard input here.
@@ -19,14 +19,14 @@ pub struct PtySession {
 /// Shared application state holding all active PTY sessions.
 pub struct AppState {
     pub sessions: Mutex<HashMap<String, PtySession>>,
-    pub pty_system: Box<dyn PtySystem + Send>,
+    pub pty_system: Mutex<Box<dyn PtySystem + Send>>,
 }
 
 impl AppState {
     pub fn new() -> Self {
         Self {
             sessions: Mutex::new(HashMap::new()),
-            pty_system: NativePtySystem::default(),
+            pty_system: Mutex::new(Box::new(NativePtySystem::default())),
         }
     }
 }
@@ -41,7 +41,7 @@ pub fn spawn(
     shell_path: &str,
     shell_args: &[String],
 ) -> Result<String> {
-    let pty_system = &state.pty_system;
+    let pty_system = state.pty_system.lock().unwrap();
 
     let pair = pty_system
         .openpty(PtySize {
@@ -52,6 +52,7 @@ pub fn spawn(
         })
         .context("failed to open PTY")?;
 
+    // In portable-pty 0.8, PtyPair has .slave (ChildPty) and .master (MasterPty).
     let mut cmd = CommandBuilder::new(shell_path);
     for arg in shell_args {
         cmd.arg(arg);
@@ -62,15 +63,15 @@ pub fn spawn(
     }
 
     let child = pair
-        .child
-        .spawn(cmd)
+        .slave
+        .spawn_command(cmd)
         .context("failed to spawn child process in PTY")?;
 
     let reader = pair
         .master
         .try_clone_reader()
         .context("failed to clone PTY reader")?;
-    let writer = pair.master.take_writer();
+    let writer = pair.master.take_writer()?;
 
     let pty_id = Uuid::new_v4().to_string();
     let event_prefix = pty_id.clone();
@@ -93,9 +94,6 @@ pub fn spawn(
         read_loop(reader, &app_clone, &pid_clone, &event_prefix);
         // On EOF / error, emit exit event.
         let _ = app_clone.emit(&format!("pty-exit-{event_prefix}"), ());
-        // Clean up session.
-        // (Sessions linger briefly so the frontend can show the exit message.
-        //  A future close or re-launch will overwrite them.)
     });
 
     Ok(pty_id)
@@ -115,7 +113,9 @@ fn read_loop(
             Err(_) => break,
         };
         let data = String::from_utf8_lossy(&buf[..n]).to_string();
-        if let Err(e) = app.emit(&format!("pty-output-{event_prefix}"), serde_json::json!({ "data": data })) {
+        if let Err(e) =
+            app.emit(&format!("pty-output-{event_prefix}"), serde_json::json!({ "data": data }))
+        {
             tracing::warn!("emit error: {e}");
             break;
         }
@@ -128,17 +128,9 @@ fn read_loop(
 
 pub fn write(state: &AppState, pty_id: &str, data: &str) -> Result<()> {
     let mut sessions = state.sessions.lock().unwrap();
-    let session = sessions
-        .get_mut(pty_id)
-        .context("PTY session not found")?;
-    session
-        .writer
-        .write_all(data.as_bytes())
-        .context("failed to write to PTY")?;
-    session
-        .writer
-        .flush()
-        .context("failed to flush PTY writer")?;
+    let session = sessions.get_mut(pty_id).context("PTY session not found")?;
+    session.writer.write_all(data.as_bytes())?;
+    session.writer.flush()?;
     Ok(())
 }
 
@@ -148,15 +140,8 @@ pub fn write(state: &AppState, pty_id: &str, data: &str) -> Result<()> {
 
 pub fn resize(state: &AppState, pty_id: &str, cols: u16, rows: u16) -> Result<()> {
     let mut sessions = state.sessions.lock().unwrap();
-    let session = sessions
-        .get_mut(pty_id)
-        .context("PTY session not found")?;
-    session._master.resize(PtySize {
-        rows,
-        cols,
-        pixel_width: 0,
-        pixel_height: 0,
-    })?;
+    let session = sessions.get_mut(pty_id).context("PTY session not found")?;
+    session._master.resize(PtySize { rows, cols, pixel_width: 0, pixel_height: 0 })?;
     Ok(())
 }
 
@@ -166,9 +151,7 @@ pub fn resize(state: &AppState, pty_id: &str, cols: u16, rows: u16) -> Result<()
 
 pub fn kill(state: &AppState, pty_id: &str) -> Result<()> {
     let mut sessions = state.sessions.lock().unwrap();
-    sessions
-        .remove(pty_id)
-        .context("PTY session not found")?;
+    sessions.remove(pty_id).context("PTY session not found")?;
     // Dropping the session kills the child (ChildPty's Drop sends SIGHUP on Unix).
     Ok(())
 }

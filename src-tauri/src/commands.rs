@@ -1,17 +1,17 @@
 use crate::pty::AppState;
 use crate::shells;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, State};
 
 /// Discover available shells on the current platform.
 #[tauri::command]
-fn list_shells() -> Vec<shells::ShellInfo> {
+pub fn list_shells() -> Vec<shells::ShellInfo> {
     shells::detect_shells()
 }
 
 /// Launch a shell in a new PTY session.
 #[tauri::command]
-fn launch_shell(
+pub fn launch_shell(
     app: AppHandle,
     state: State<'_, Arc<AppState>>,
     shell_path: String,
@@ -22,13 +22,17 @@ fn launch_shell(
 
 /// Write input data to a running PTY session.
 #[tauri::command]
-fn write_pty(state: State<'_, Arc<AppState>>, pty_id: String, data: String) -> Result<(), String> {
+pub fn write_pty(
+    state: State<'_, Arc<AppState>>,
+    pty_id: String,
+    data: String,
+) -> Result<(), String> {
     crate::pty::write(state.inner(), &pty_id, &data).map_err(|e| e.to_string())
 }
 
 /// Resize a running PTY session.
 #[tauri::command]
-fn resize_pty(
+pub fn resize_pty(
     state: State<'_, Arc<AppState>>,
     pty_id: String,
     cols: u16,
@@ -39,6 +43,6 @@ fn resize_pty(
 
 /// Kill and remove a PTY session.
 #[tauri::command]
-fn kill_pty(state: State<'_, Arc<AppState>>, pty_id: String) -> Result<(), String> {
+pub fn kill_pty(state: State<'_, Arc<AppState>>, pty_id: String) -> Result<(), String> {
     crate::pty::kill(state.inner(), &pty_id).map_err(|e| e.to_string())
 }
