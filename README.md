@@ -1,119 +1,122 @@
 # Aether
 
-Minimal, extensible Tauri-based terminal runtime focused on clean cross-platform
-PTY management and environment-aware shell launching.
+**Minimal, extensible terminal runtime.**  Like Neovim for your terminal.
+
+Aether is a thin core that provides PTY subprocess management, xterm.js
+rendering, and a plugin API.  Everything else — shell selector, settings,
+toolbar, tabs, AI assistant, themes — is a plugin.
+
+**Release binary:** 2.7 MB  |  **Plugin language:** JavaScript (ES modules)
+
+## Quick start
+
+```bash
+npm install
+npm run tauri dev
+```
+
+## Build for production
+
+```bash
+npm run build:win      # MSI + NSIS (Windows)
+npm run build:mac      # DMG (macOS)
+npm run build:linux    # deb + AppImage (Linux)
+```
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│  Frontend (React + xterm.js)            │
-│  - Shell selection grid                 │
-│  - Terminal renderer                    │
-│  - I/O via Tauri events / invoke        │
-└──────────────┬──────────────────────────┘
-               │  IPC (invoke / events)
-┌──────────────▼──────────────────────────┐
-│  Rust Backend (Tauri)                   │
-│  - pty.rs   PTY lifecycle & I/O         │
-│  - shells.rs Cross-platform detection   │
-│  - commands.rs Tauri command handlers   │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  PLUGINS  (JS — built-in + user-written)    │
+│  shell-selector, settings, toolbar,         │
+│  command-palette, status-bar, themes, ...   │
+├─────────────────────────────────────────────┤
+│  API LAYER  (aether.*)                      │
+│  events · commands · terminal · ui ·        │
+│  settings · api (raw IPC)                   │
+├──────────────────┬──────────────────────────┤
+│  FRONTEND CORE   │  RUST BACKEND            │
+│  plugin-loader   │  pty.rs   — PTY I/O      │
+│  event-bus       │  shells.rs— detection    │
+│  commands        │  commands.rs — IPC       │
+│  terminal.js     │  config.rs — settings    │
+│  ...             │                           │
+└──────────────────┴──────────────────────────┘
 ```
 
-**v0 does not include:** AI features, plugins, session management,
-workflows, panes, tabs, or any abstractions beyond what's listed above.
+See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the full design.
 
-## Prerequisites
+## Plugin system
 
-| Tool        | Version      |
-|-------------|-------------|
-| Rust        | 1.75+       |
-| Node.js     | 20+         |
-| npm         | 10+         |
+Plugins are JavaScript modules that export `activate(aether)`:
 
-### System libraries (Linux)
-
-```bash
-sudo apt install -y \
-  libwebkit2gtk-4.1-dev \
-  libjavascriptcoregtk-4.1-dev \
-  libsoup-3.0-dev \
-  libxdo-dev \
-  libssl-dev \
-  libayatana-appindicator3-dev \
-  librsvg2-dev
+```js
+// ~/.config/aether/plugins/my-plugin/main.js
+export function activate(aether) {
+  aether.commands.register('my-plugin:hello', {
+    label: 'Say Hello',
+    handler: () => aether.terminal.write('hello from a plugin!\n')
+  });
+}
 ```
 
-On **macOS** no extra libraries are needed.
-On **Windows** install [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-and [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (included in Windows 11).
+Drop a plugin in `~/.config/aether/plugins/<name>/` and it's loaded on next
+launch.  No recompilation, no config files to edit.
 
-## Getting started
+## Rust backend
 
-```bash
-# Install JS dependencies
-npm install
+The backend stays minimal by design — 5 IPC commands, 2 events, no plugin
+logic.  All extensibility lives in the frontend.
 
-# Run in development mode
-npm run tauri dev
+| Command       | Does                        |
+|---------------|-----------------------------|
+| `list_shells` | Discover available shells   |
+| `launch_shell`| Spawn a PTY session         |
+| `write_pty`   | Send keyboard input         |
+| `resize_pty`  | Resize terminal dimensions  |
+| `kill_pty`    | Terminate a shell session   |
 
-# Build for production
-npm run tauri build
-```
-
-## Shell detection
-
-| Platform  | Detected shells                                   |
-|-----------|---------------------------------------------------|
-| Linux     | bash, zsh, fish, sh (from /etc/shells or /usr/bin)|
-| macOS     | bash, zsh, fish, sh                               |
-| Windows   | PowerShell 7, Windows PowerShell, CMD, Git Bash   |
-| Windows   | Each WSL distro (via `wsl --list --quiet`)        |
+| Event              | Fires when            |
+|--------------------|-----------------------|
+| `pty-output-{id}`  | PTY produces stdout   |
+| `pty-exit-{id}`    | PTY process exits     |
 
 ## Project structure
 
 ```
 aether/
-├── src/                         # Frontend (React + xterm.js)
-│   ├── main.tsx                 # Entry point
-│   ├── App.tsx                  # App shell (selector → terminal)
-│   ├── App.css                  # All styles
-│   └── components/
-│       ├── ShellSelector.tsx    # Shell grid picker
-│       └── Terminal.tsx         # xterm.js wrapper + I/O bridge
-├── src-tauri/                   # Rust backend
-│   ├── Cargo.toml
-│   ├── tauri.conf.json
-│   └── src/
-│       ├── main.rs              # Entry point
-│       ├── lib.rs               # Tauri app setup / plugin registration
-│       ├── shells.rs            # Shell detection (Unix / Windows)
-│       ├── pty.rs               # PTY session management
-│       └── commands.rs          # Tauri IPC command handlers
+├── src/                        # Frontend (vanilla JS + xterm.js)
+│   ├── main.js                 # Thin entry point
+│   ├── style.css               # Core layout styles
+│   ├── core/                   # Plugin API infrastructure
+│   │   ├── event-bus.js
+│   │   ├── commands.js
+│   │   ├── settings.js
+│   │   ├── terminal.js
+│   │   ├── ui-api.js
+│   │   ├── plugin-loader.js
+│   │   └── aether-api.js
+│   └── plugins/                # Built-in plugins (bundled)
+│       ├── shell-selector/
+│       ├── settings/
+│       ├── toolbar/
+│       ├── command-palette/
+│       ├── status-bar/
+│       └── default-theme/
+├── src-tauri/                  # Rust backend (Tauri)
+│   ├── src/
+│   │   ├── pty.rs
+│   │   ├── shells.rs
+│   │   ├── commands.rs
+│   │   └── config.rs
+│   └── Cargo.toml
+├── docs/
+│   ├── ARCHITECTURE.md         # Full architecture
+│   ├── PLAN.md                 # Implementation roadmap
+│   └── PLUGINS.md              # Plugin authoring guide (WIP)
 ├── package.json
-├── vite.config.ts
-└── tsconfig.json
+└── vite.config.ts
 ```
-
-## IPC surface
-
-### Commands (frontend → backend)
-
-| Command        | Args                                    | Returns        |
-|----------------|-----------------------------------------|----------------|
-| `list_shells`  | —                                       | `ShellInfo[]`  |
-| `launch_shell` | `shell_path`, `shell_args`              | `pty_id`       |
-| `write_pty`    | `pty_id`, `data`                        | —              |
-| `resize_pty`   | `pty_id`, `cols`, `rows`                | —              |
-| `kill_pty`     | `pty_id`                                | —              |
-
-### Events (backend → frontend)
-
-| Event pattern         | Payload           | Fires when                     |
-|-----------------------|-------------------|--------------------------------|
-| `pty-output-{id}`     | `{ data: string }`| PTY produces stdout            |
-| `pty-exit-{id}`       | `{}`              | PTY child process exits        |
 
 ## License
 
