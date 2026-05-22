@@ -69,3 +69,30 @@ pub fn get_settings(app: AppHandle) -> Settings {
 pub fn update_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
     settings.save(&app)
 }
+
+/// List available theme presets from ~/.config/aether/themes/*.json
+#[tauri::command]
+pub fn list_themes(app: AppHandle) -> Vec<String> {
+    let mut path = app.path().app_config_dir().unwrap_or_default();
+    path.push("themes");
+    let mut themes = vec!["aether-dark".into()];
+    if let Ok(entries) = std::fs::read_dir(&path) {
+        for entry in entries.flatten() {
+            if entry.path().extension().map_or(false, |e| e == "json") {
+                if let Some(name) = entry.path().file_stem().and_then(|s| s.to_str()) {
+                    themes.push(name.to_string());
+                }
+            }
+        }
+    }
+    themes
+}
+
+/// Read a theme JSON file from ~/.config/aether/themes/<name>.json
+#[tauri::command]
+pub fn read_theme_file(app: AppHandle, name: String) -> Result<String, String> {
+    let mut path = app.path().app_config_dir().unwrap_or_default();
+    path.push("themes");
+    path.push(format!("{}.json", name));
+    std::fs::read_to_string(&path).map_err(|e| e.to_string())
+}

@@ -18,6 +18,8 @@ pub fn run() {
             commands::kill_pty,
             config::get_settings,
             config::update_settings,
+            config::list_themes,
+            config::read_theme_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running aether");
