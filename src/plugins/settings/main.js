@@ -85,11 +85,14 @@ export function activate(aether) {
 
   function toggleInlinePanel() {
     inlineVisible = !inlineVisible
-    const panel = document.querySelector('.terminal-settings-panel')
+    let panel = document.querySelector('.terminal-settings-panel')
     if (!panel) return
     injectInlinePanel()
     panel.style.display = inlineVisible ? 'flex' : 'none'
   }
+
+  // Debug: log when toggle is executed
+  console.log('[settings] plugin activated, toggle-settings-panel command registered')
 
   /* ── Full settings page ── */
 

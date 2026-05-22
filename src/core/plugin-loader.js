@@ -9,7 +9,6 @@
  * Errors in one plugin never crash another (try/catch per plugin).
  */
 
-import { commands } from './commands.js'
 import { events } from './event-bus.js'
 
 function createPluginLoader() {
@@ -67,19 +66,8 @@ function createPluginLoader() {
       return
     }
 
-    // Register contributed commands from manifest
-    if (manifest?.contributes?.commands) {
-      for (const cmd of manifest.contributes.commands) {
-        if (!commands.has(cmd.id)) {
-          commands.register(cmd.id, {
-            label: cmd.label,
-            category: manifest.name ?? name,
-            icon: cmd.icon,
-            handler: () => commands.execute(cmd.id),
-          })
-        }
-      }
-    }
+    // Contributed commands are handled by the plugin's activate() function
+    // The manifest declares them, but the plugin registers the real handler.
 
     if (typeof mod.activate === 'function') {
       try {
