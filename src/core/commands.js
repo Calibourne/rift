@@ -31,7 +31,8 @@ function createCommandRegistry() {
    */
   function register(id, def) {
     if (registry.has(id)) {
-      console.warn(`[commands] overwriting existing command "${id}"`)
+      // Don't overwrite — first registration wins
+      return () => {}
     }
     registry.set(id, { id, ...def })
     return () => registry.delete(id)

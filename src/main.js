@@ -10,6 +10,7 @@ import "./style.css"
 
 import { settings } from "./core/settings.js"
 import { events } from "./core/event-bus.js"
+import { commands } from "./core/commands.js"
 import { pluginLoader } from "./core/plugin-loader.js"
 import { terminal } from "./core/terminal.js"
 import { api } from "./core/aether-api.js"
@@ -23,14 +24,37 @@ async function boot() {
   // 2. Emit core modules are ready
   events.emit("app:ready", {})
 
-  // 3. Load built-in plugins (Vite static glob — must be in this file)
+  // 3. Register built-in commands (before plugins, so our handlers win)
+  commands.register('builtin:close-terminal', {
+    label: 'Close Terminal',
+    category: 'Built-in',
+    handler: async () => {
+      if (terminal.isActive()) {
+        await terminal.close()
+      }
+      events.emit('app:phase', 'select')
+    },
+  })
+
+  commands.register('builtin:show-shell-selector', {
+    label: 'Show Shell Selector',
+    category: 'Built-in',
+    handler: async () => {
+      if (terminal.isActive()) {
+        await terminal.close()
+      }
+      events.emit('app:phase', 'select')
+    },
+  })
+
+  // 4. Load built-in plugins (Vite static glob — must be in this file)
   const modules = import.meta.glob("./plugins/*/main.js", { eager: false })
   const manifests = import.meta.glob("./plugins/*/manifest.json", { eager: true, import: "default" })
 
   // Pass glob results to the plugin loader
   await pluginLoader.loadBuiltins(modules, manifests, api)
 
-  // 4. Load user plugins (from ~/.config/aether/plugins/)
+  // 5. Load user plugins (from ~/.config/aether/plugins/)
   await pluginLoader.loadUserPlugins(api)
 
   // 5. Wire up shell selection -> terminal launch
@@ -55,7 +79,7 @@ async function boot() {
     }
   })
 
-  // 6. Start the app — show shell selector
+  // 7. Start the app — show shell selector
   events.emit("app:phase", "select")
 }
 
