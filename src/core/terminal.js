@@ -158,6 +158,8 @@ function createTerminal() {
         requestAnimationFrame(() => { try { fit.fit() } catch (_) {} })
       } else if (key === 'font_family') {
         term.options.fontFamily = value
+      } else if (key === 'theme') {
+        term.options.theme = value
       }
     })
     cleanups.push(onSetting)
