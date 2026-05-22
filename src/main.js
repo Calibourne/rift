@@ -29,10 +29,38 @@ async function boot() {
     label: 'Close Terminal',
     category: 'Built-in',
     handler: async () => {
-      if (terminal.isActive()) {
-        await terminal.close()
+      if (!terminal.isActive()) return
+      await terminal.close()
+      // Show a placeholder in the terminal area instead of going back to selector
+      const container = document.querySelector('.terminal-container')
+      if (container) {
+        container.innerHTML = ''
+        const placeholder = document.createElement('div')
+        placeholder.className = 'terminal-placeholder'
+        placeholder.textContent = 'Terminal closed — Ctrl+P to open a new one'
+        container.appendChild(placeholder)
       }
-      events.emit('app:phase', 'select')
+    },
+  })
+
+  commands.register('builtin:new-terminal', {
+    label: 'New Terminal',
+    category: 'Built-in',
+    handler: async () => {
+      const defaultShell = settings.get('default_shell')
+      if (!defaultShell || !defaultShell.path) {
+        // No default set, show selector
+        events.emit('app:phase', 'select')
+        return
+      }
+      const container = document.querySelector('.terminal-container')
+      if (!container) {
+        events.emit('app:phase', 'terminal')
+        // Wait a tick for toolbar to render
+        await new Promise(r => setTimeout(r, 0))
+      }
+      events.emit('app:phase', 'terminal')
+      events.emit('shell:selected', defaultShell)
     },
   })
 
@@ -79,8 +107,16 @@ async function boot() {
     }
   })
 
-  // 7. Start the app — show shell selector
-  events.emit("app:phase", "select")
+  // 7. Start the app
+  const defaultShell = settings.get('default_shell')
+  if (defaultShell && defaultShell.path) {
+    // Auto-launch — have a default, skip the selector
+    events.emit('app:phase', 'terminal')
+    events.emit('shell:selected', defaultShell)
+  } else {
+    // No default — show the shell selector (first run)
+    events.emit('app:phase', 'select')
+  }
 }
 
 boot().catch((e) => {

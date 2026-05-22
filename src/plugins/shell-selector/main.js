@@ -78,11 +78,10 @@ export function activate(aether) {
         path: shell.path,
         args: shell.args,
       }
-      // This signals the toolbar plugin to show the terminal view
+      // Remember this as the default shell
+      aether.settings.set('default_shell', info)
+
       aether.events.emit('app:phase', 'terminal')
-      // Terminal plugin should already be listening... but actually,
-      // terminal.open is called by whoever handles the phase change.
-      // For now, let the main render cycle handle this.
       aether.events.emit('shell:selected', info)
     } catch (e) {
       console.error('launch failed:', e)
@@ -100,9 +99,6 @@ export function activate(aether) {
     category: 'Built-in',
     handler: () => aether.events.emit('app:phase', 'select'),
   })
-
-  // Initial render
-  render()
 }
 
 export function deactivate() {
