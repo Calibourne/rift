@@ -43,10 +43,19 @@ function createSettings() {
 
   /**
    * Get a setting value.
+   * Special handling: 'default_shell' is stored as JSON string in Rust,
+   * auto-deserialize on read.
    * @param {string} key
    * @returns {any}
    */
   function get(key) {
+    if (key === 'default_shell') {
+      const raw = store[key]
+      if (typeof raw === 'string') {
+        try { return JSON.parse(raw) } catch { return null }
+      }
+      return raw ?? null
+    }
     return store[key]
   }
 
@@ -60,11 +69,15 @@ function createSettings() {
 
   /**
    * Set a setting value and persist to disk.
+   * Special handling: 'default_shell' is serialized to JSON string for Rust.
    * @param {string} key
    * @param {any} value
    */
   async function set(key, value) {
-    store[key] = value
+    const persistValue = key === 'default_shell'
+      ? (value ? JSON.stringify(value) : null)
+      : value
+    store[key] = persistValue
     // Emit before persisting so plugins can react
     events.emit('settings:changed', { key, value })
     for (const fn of changeHandlers) {

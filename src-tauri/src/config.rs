@@ -7,6 +7,8 @@ use tauri::{AppHandle, Manager};
 pub struct Settings {
     pub font_family: String,
     pub font_size: u16,
+    /// Default shell to auto-launch. Stored as JSON string of { name, path, args }.
+    pub default_shell: Option<String>,
 }
 
 impl Default for Settings {
@@ -14,6 +16,7 @@ impl Default for Settings {
         Self {
             font_family: "'JetBrains Mono', 'Fira Code', monospace".into(),
             font_size: 14,
+            default_shell: None,
         }
     }
 }

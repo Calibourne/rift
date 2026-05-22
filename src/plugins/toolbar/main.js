@@ -46,21 +46,23 @@ export function activate(aether) {
     }, txt('Close'))
     rightEl.appendChild(closeBtn)
 
+    // Settings gear
+    const gearBtn = h('button', {
+      className: 'gear-btn',
+      title: 'Settings',
+      onClick: () => aether.commands.execute('builtin:toggle-settings-panel'),
+    }, txt('⚙'))
+    rightEl.appendChild(gearBtn)
+
     toolbarEl.appendChild(tabEl)
     toolbarEl.appendChild(rightEl)
 
     const container = h('div', { className: 'terminal-container' })
 
-    const settingsPanel = h('div', {
-      className: 'terminal-settings-panel',
-      style: { display: 'none' },
-    })
-
     root.appendChild(toolbarEl)
-    root.appendChild(settingsPanel)
     root.appendChild(container)
 
-    window.__aether_toolbar = { toolbarEl, tabEl, rightEl, settingsPanel, container }
+    window.__aether_toolbar = { toolbarEl, tabEl, rightEl, container }
   }
 
   aether.events.on('shell:selected', (shell) => {
@@ -97,10 +99,6 @@ export function activate(aether) {
   window.__aether_getTerminalContainer = () => {
     return window.__aether_toolbar?.container ?? document.querySelector('.terminal-container')
   }
-
-  window.__aether_getSettingsPanel = () => {
-    return window.__aether_toolbar?.settingsPanel ?? null
-  }
 }
 
 export function deactivate() {
@@ -108,5 +106,4 @@ export function deactivate() {
   if (root) root.classList.remove('terminal-mode')
   delete window.__aether_toolbar
   delete window.__aether_getTerminalContainer
-  delete window.__aether_getSettingsPanel
 }

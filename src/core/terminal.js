@@ -87,6 +87,13 @@ function createTerminal() {
       },
       allowTransparency: false,
       cols: 80, rows: 24,
+      // Let Ctrl+P bubble up to command palette instead of sending to PTY
+      attachCustomKeyEventHandler: (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+          return false
+        }
+        return true
+      },
       ...options,
     })
     term.loadAddon(fit)
@@ -142,6 +149,18 @@ function createTerminal() {
     }
     window.addEventListener('resize', onWinResize)
     cleanups.push(() => window.removeEventListener('resize', onWinResize))
+
+    // ── React to font/family changes ──
+    const onSetting = events.on('settings:changed', ({ key, value }) => {
+      if (!term) return
+      if (key === 'font_size') {
+        term.options.fontSize = value
+        requestAnimationFrame(() => { try { fit.fit() } catch (_) {} })
+      } else if (key === 'font_family') {
+        term.options.fontFamily = value
+      }
+    })
+    cleanups.push(onSetting)
 
     events.emit('pty:open', { ptyId, shell: shellInfo })
     return ptyId

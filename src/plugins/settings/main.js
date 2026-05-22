@@ -59,9 +59,6 @@ export function activate(aether) {
     }
     fontSel.addEventListener('change', () => {
       aether.settings.set('font_family', fontSel.value)
-      if (window.__aether_terminal) {
-        window.__aether_terminal.options.fontFamily = fontSel.value
-      }
     })
 
     const fontLbl = h('label', { className: 'ts-setting' },
@@ -91,10 +88,12 @@ export function activate(aether) {
 
   function toggleInlinePanel() {
     inlineVisible = !inlineVisible
-    const existing = document.querySelector('.terminal-settings-panel.ts-inline')
-    if (existing) {
-      existing.style.display = inlineVisible ? 'flex' : 'none'
+    let panel = document.querySelector('.terminal-settings-panel.ts-inline')
+    if (!panel) {
+      injectInlinePanel()
+      panel = document.querySelector('.terminal-settings-panel.ts-inline')
     }
+    if (panel) panel.style.display = inlineVisible ? 'flex' : 'none'
   }
 
   /* ── Full settings page ── */
@@ -111,7 +110,10 @@ export function activate(aether) {
     const header = h('div', { className: 'settings-header' },
       h('button', {
         className: 'back-btn',
-        onClick: () => aether.events.emit('app:phase', 'select'),
+        onClick: () => {
+          const def = aether.settings.get('default_shell')
+          aether.events.emit('app:phase', def ? 'terminal' : 'select')
+        },
       }, txt('\u2190 Back')),
       h('h1', {}, txt('Settings'))
     )
@@ -166,7 +168,8 @@ export function activate(aether) {
       try {
         await aether.settings.set('font_family', ff)
         await aether.settings.set('font_size', fs)
-        aether.events.emit('app:phase', 'select')
+        const def = aether.settings.get('default_shell')
+        aether.events.emit('app:phase', def ? 'terminal' : 'select')
       } catch (e) {
         errorP.textContent = String(e)
         saveBtn.disabled = false
@@ -194,16 +197,16 @@ export function activate(aether) {
   /* ── Hook into terminal lifecycle ── */
 
   function injectInlinePanel() {
-    const settingsPanel = window.__aether_getSettingsPanel
-      ? window.__aether_getSettingsPanel()
-      : document.querySelector('.terminal-settings-panel')
+    // Already injected?
+    if (document.querySelector('.terminal-settings-panel.ts-inline')) return
 
-    if (settingsPanel && !settingsPanel.querySelector('.ts-setting')) {
-      const inline = buildInlinePanel()
-      inline.classList.add('ts-inline')
-      inline.style.display = 'none'
-      settingsPanel.parentNode?.insertBefore(inline, settingsPanel.nextSibling)
-    }
+    const container = document.querySelector('.terminal-container')
+    if (!container) return
+
+    const inline = buildInlinePanel()
+    inline.classList.add('ts-inline')
+    inline.style.display = 'none'
+    container.parentNode?.insertBefore(inline, container)
   }
 
   /* ── Commands ── */
