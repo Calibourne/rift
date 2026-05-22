@@ -22,6 +22,9 @@ const txt = (s) => document.createTextNode(s)
 
 export function activate(aether) {
   let rootEl = null
+  let switchModal = null
+
+  /* ── Full-screen shell selector (first-run) ── */
 
   /**
    * Render the shell selector screen into #root.
@@ -99,9 +102,88 @@ export function activate(aether) {
     category: 'Built-in',
     handler: () => aether.events.emit('app:phase', 'select'),
   })
+
+  /* ── Shell switcher modal (Ctrl+T) ── */
+
+  function openSwitcher() {
+    if (switchModal) return
+    switchModal = buildSwitcher()
+    document.body.appendChild(switchModal)
+    const onKey = (e) => { if (e.key === 'Escape') closeSwitcher() }
+    document.addEventListener('keydown', onKey)
+    switchModal._closeHandler = onKey
+  }
+
+  function closeSwitcher() {
+    if (!switchModal) return
+    if (switchModal._closeHandler) document.removeEventListener('keydown', switchModal._closeHandler)
+    switchModal.remove()
+    switchModal = null
+  }
+
+  function buildSwitcher() {
+    const list = h('div', { className: 'switcher-modal-list' })
+
+    aether.api.invoke('list_shells').then(shells => {
+      list.innerHTML = ''
+      const activeShell = aether.terminal.getInfo()?.shell
+      for (const s of shells) {
+        const active = activeShell && activeShell.path === s.path
+        const item = h('div', {
+          className: 'switcher-item' + (active ? ' sw-active' : ''),
+          onClick: () => switchTo(s),
+        },
+          h('span', { className: 'icon' }, txt(s.icon)),
+          h('span', { className: 'sw-name' }, txt(s.name)),
+          h('span', { className: 'sw-version' }, txt(s.version)),
+        )
+        list.appendChild(item)
+      }
+    }).catch(() => {
+      list.innerHTML = '<div class="switcher-item">Failed to load shells</div>'
+    })
+
+    return h('div', { className: 'switcher-modal-overlay' },
+      h('div', { className: 'switcher-modal' },
+        h('div', { className: 'switcher-modal-header' }, txt('Switch Shell')),
+        list,
+        h('div', { className: 'switcher-modal-footer' }, txt('Esc close')),
+      ),
+    )
+  }
+
+  async function switchTo(shell) {
+    closeSwitcher()
+    const info = { name: shell.name, path: shell.path, args: shell.args }
+    await aether.settings.set('default_shell', info)
+
+    if (aether.terminal.isActive()) {
+      await aether.terminal.close()
+    }
+
+    aether.events.emit('app:phase', 'terminal')
+    aether.events.emit('shell:selected', info)
+  }
+
+  aether.commands.register('builtin:switch-shell', {
+    label: 'Switch Shell',
+    category: 'Built-in',
+    handler: () => openSwitcher(),
+  })
+
+  // Ctrl+T hotkey (capture phase)
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+      e.preventDefault()
+      e.stopPropagation()
+      openSwitcher()
+    }
+  }, true)
 }
 
 export function deactivate() {
   const root = document.getElementById('root')
   if (root) root.classList.remove('shell-selector-mode')
+  const modal = document.querySelector('.switcher-modal-overlay')
+  if (modal) modal.remove()
 }
