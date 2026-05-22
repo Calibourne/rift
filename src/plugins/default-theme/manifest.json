@@ -1,0 +1,6 @@
+{
+  "name": "@aether/default-theme",
+  "version": "0.1.0",
+  "description": "Default dark color scheme",
+  "main": "main.js"
+}

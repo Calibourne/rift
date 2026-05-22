@@ -7,83 +7,59 @@
  *
  * Each plugin receives the full AetherAPI object and calls activate(aether).
  * Errors in one plugin never crash another (try/catch per plugin).
- *
- * Usage:
- *   import { pluginLoader } from './core/plugin-loader.js'
- *   import { api } from './core/aether-api.js'
- *   await pluginLoader.loadBuiltins(import.meta.glob, api)
- *   await pluginLoader.loadUserPlugins(api)
  */
 
 import { commands } from './commands.js'
-import { ui } from './ui-api.js'
 import { events } from './event-bus.js'
 
-/** Built-in plugin manifests — loaded at compile time via Vite glob */
-const BUILTIN_PLUGINS = [
-  { name: '@aether/shell-selector', dir: './plugins/shell-selector/' },
-  { name: '@aether/settings',       dir: './plugins/settings/' },
-  { name: '@aether/toolbar',        dir: './plugins/toolbar/' },
-  { name: '@aether/command-palette',dir: './plugins/command-palette/' },
-  { name: '@aether/status-bar',     dir: './plugins/status-bar/' },
-  { name: '@aether/default-theme',  dir: './plugins/default-theme/' },
-]
-
 function createPluginLoader() {
-  /** @type {Map<string, { name: string, module: any, api: object }>} */
   const active = new Map()
 
   /**
-   * Load all built-in plugins using Vite's import.meta.glob.
-   * Each plugin dir must have main.js and manifest.json.
-   * @param {Function} globFn - import.meta.glob result
-   * @param {object} api - AetherAPI instance
+   * Load all built-in plugins from pre-collected Vite glob results.
+   *
+   * mainModules is from Vite's glob import on main.js files.
+   * manifestModules is from Vite's glob on manifest.json with eager:true.
+   *
+   * @param {object} mainModules     - path -> lazy import function
+   * @param {object} manifestModules - path -> manifest object
+   * @param {object} api             - AetherAPI instance
    */
-  async function loadBuiltins(globFn, api) {
-    if (!globFn || typeof globFn !== 'function') return
+  async function loadBuiltins(mainModules, manifestModules, api) {
+    if (!mainModules || typeof mainModules !== 'object') return
 
-    // Gather all main.js files from src/plugins/
-    const modules = globFn('./plugins/*/main.js', { eager: false })
-    const manifests = globFn('./plugins/*/manifest.json', { eager: true, import: 'default' })
+    for (const [mainPath, modPromise] of Object.entries(mainModules)) {
+      const m = mainPath.match(/\.\/plugins\/([^/]+)\/main\.js/)
+      if (!m) continue
 
-    for (const plugin of BUILTIN_PLUGINS) {
-      const mainPath = `${plugin.dir}main.js`
-      const manifestPath = `${plugin.dir}manifest.json`
-
-      const modPromise = modules[mainPath]
-      const manifest = manifests[manifestPath]
-
-      if (!modPromise) {
-        console.warn(`[plugin-loader] built-in "${plugin.name}" has no main.js at ${mainPath}`)
-        continue
-      }
+      const pluginName = m[1]
+      const manifestPath = `./plugins/${pluginName}/manifest.json`
+      const manifest = manifestModules?.[manifestPath]
 
       try {
         const mod = await modPromise()
-        const name = manifest?.name ?? plugin.name
+        const name = manifest?.name ?? pluginName
         await activate(name, mod, api, manifest)
       } catch (e) {
-        console.error(`[plugin-loader] failed to load built-in "${plugin.name}":`, e)
+        console.error(`[plugin-loader] failed to load "${pluginName}":`, e)
       }
     }
   }
 
   /**
    * Load user plugins from ~/.config/aether/plugins/<name>/.
-   * (Uses Tauri IPC to read the directory, or fetch for web dev.)
-   * @param {object} api - AetherAPI instance
+   * (Phase 3 implementation.)
    */
   async function loadUserPlugins(api) {
-    // Phase 3 implementation — Tauri fs plugin or similar
-    // For now, this is a no-op placeholder
+    // Placeholder for Phase 3
   }
 
   /**
    * Activate a single plugin.
-   * @param {string} name
-   * @param {object} mod - The module (must export activate function)
-   * @param {object} api - AetherAPI instance
-   * @param {object} [manifest]
+   * @param {string}   name
+   * @param {object}   mod
+   * @param {object}   api
+   * @param {object}   [manifest]
    */
   async function activate(name, mod, api, manifest) {
     if (active.has(name)) {
@@ -91,7 +67,7 @@ function createPluginLoader() {
       return
     }
 
-    // Register contributed commands
+    // Register contributed commands from manifest
     if (manifest?.contributes?.commands) {
       for (const cmd of manifest.contributes.commands) {
         if (!commands.has(cmd.id)) {
@@ -105,7 +81,6 @@ function createPluginLoader() {
       }
     }
 
-    // Call activate
     if (typeof mod.activate === 'function') {
       try {
         mod.activate(api)
@@ -119,10 +94,6 @@ function createPluginLoader() {
     events.emit('plugin:activated', { name })
   }
 
-  /**
-   * Deactivate a plugin (calls its deactivate export if present).
-   * @param {string} name
-   */
   async function deactivate(name) {
     const entry = active.get(name)
     if (!entry) return
@@ -135,18 +106,10 @@ function createPluginLoader() {
     events.emit('plugin:deactivated', { name })
   }
 
-  /**
-   * Check if a plugin is active.
-   * @param {string} name
-   */
   function isActive(name) {
     return active.has(name)
   }
 
-  /**
-   * List active plugins.
-   * @returns {Array<{ name: string }>}
-   */
   function listActive() {
     return [...active.keys()].map(name => ({ name }))
   }

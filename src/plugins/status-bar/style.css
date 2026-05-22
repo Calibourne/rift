@@ -1,0 +1,21 @@
+/* status-bar plugin styles */
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 12px;
+  background: var(--aether-chromeBg, #12121e);
+  border-top: 1px solid var(--aether-chromeBorder, #2a2a3e);
+  font-size: 0.6875rem;
+  color: var(--aether-textMuted, #666);
+  flex-shrink: 0;
+  min-height: 22px;
+}
+
+.status-left,
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

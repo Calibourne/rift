@@ -1,0 +1,6 @@
+{
+  "name": "@aether/toolbar",
+  "version": "0.1.0",
+  "description": "Terminal toolbar with shell info and action buttons",
+  "main": "main.js"
+}

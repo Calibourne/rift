@@ -1,0 +1,83 @@
+/* toolbar plugin styles */
+
+.terminal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--aether-chromeBg, #12121e);
+  border-bottom: 1px solid var(--aether-chromeBorder, #2a2a3e);
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+}
+
+.terminal-toolbar .tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: var(--aether-cardBg, #1e1e34);
+  border-radius: 6px;
+  font-weight: 500;
+  color: var(--aether-textBright, #ccc);
+  flex: 1;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.plugin-btn {
+  background: none;
+  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  border-radius: 6px;
+  color: var(--aether-textMuted, #666);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 8px;
+  line-height: 1.4;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.plugin-btn:hover {
+  color: var(--aether-textBright, #ccc);
+  border-color: #5a5a7e;
+  background: var(--aether-cardHover, #1e1e34);
+}
+
+/* Settings panel (between toolbar and terminal) */
+.terminal-settings-panel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--aether-chromeBg, #14142a);
+  border-bottom: 1px solid var(--aether-chromeBorder, #2a2a3e);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* Terminal container */
+.terminal-container {
+  flex: 1;
+  overflow: hidden;
+  background: var(--aether-background, #0e0e1a);
+  position: relative;
+}
+
+.terminal-container .xterm {
+  height: 100%;
+  padding: 4px;
+}
+
+.terminal-container .xterm-viewport {
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+
+.terminal-mode #root {
+  background: var(--aether-background, #0e0e1a);
+}

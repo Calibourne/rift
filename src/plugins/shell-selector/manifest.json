@@ -1,0 +1,11 @@
+{
+  "name": "@aether/shell-selector",
+  "version": "0.1.0",
+  "description": "Shell selection grid — the initial screen",
+  "main": "main.js",
+  "contributes": {
+    "commands": [
+      { "id": "builtin:show-shell-selector", "label": "Show Shell Selector" }
+    ]
+  }
+}

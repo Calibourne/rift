@@ -1,0 +1,11 @@
+{
+  "name": "@aether/command-palette",
+  "version": "0.1.0",
+  "description": "Ctrl+P command palette",
+  "main": "main.js",
+  "contributes": {
+    "commands": [
+      { "id": "builtin:open-palette", "label": "Open Command Palette" }
+    ]
+  }
+}
