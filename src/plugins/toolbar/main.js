@@ -42,12 +42,19 @@ export function activate(aether) {
     toolbarEl.appendChild(tabEl)
     toolbarEl.appendChild(rightEl)
 
+    // Settings panel (hidden by default, populated by settings plugin)
+    const settingsPanel = h('div', {
+      className: 'terminal-settings-panel',
+      style: { display: 'none' },
+    })
+
     const container = h('div', { className: 'terminal-container' })
 
     root.appendChild(toolbarEl)
+    root.appendChild(settingsPanel)
     root.appendChild(container)
 
-    window.__aether_toolbar = { toolbarEl, tabEl, rightEl, container }
+    window.__aether_toolbar = { toolbarEl, tabEl, rightEl, container, settingsPanel }
   }
 
   aether.events.on('shell:selected', (shell) => {

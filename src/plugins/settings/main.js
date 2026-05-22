@@ -43,12 +43,11 @@ const txt = (s) => document.createTextNode(s)
 export function activate(aether) {
   let inlineVisible = false
 
-  /* ── Inline panel ── */
+  /* ── Inline panel (populates toolbar's .terminal-settings-panel) ── */
 
-  function buildInlinePanel() {
-    const panel = document.createElement('div')
-    panel.className = 'terminal-settings-panel'
-    panel.style.display = 'none'
+  function injectInlinePanel() {
+    const panel = document.querySelector('.terminal-settings-panel')
+    if (!panel || panel.querySelector('.ts-setting')) return
 
     // Font selector
     const fontSel = h('select', { className: 'ts-select' })
@@ -82,18 +81,14 @@ export function activate(aether) {
       h('span', { className: 'ts-label' }, txt('Size')), sizeCtrl
     )
     panel.appendChild(sizeLbl)
-
-    return panel
   }
 
   function toggleInlinePanel() {
     inlineVisible = !inlineVisible
-    let panel = document.querySelector('.terminal-settings-panel.ts-inline')
-    if (!panel) {
-      injectInlinePanel()
-      panel = document.querySelector('.terminal-settings-panel.ts-inline')
-    }
-    if (panel) panel.style.display = inlineVisible ? 'flex' : 'none'
+    const panel = document.querySelector('.terminal-settings-panel')
+    if (!panel) return
+    injectInlinePanel()
+    panel.style.display = inlineVisible ? 'flex' : 'none'
   }
 
   /* ── Full settings page ── */
@@ -137,7 +132,6 @@ export function activate(aether) {
         txt('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 /home/user \u2500'))
     )
 
-    // Font picker
     const fontSel = h('select', { className: 'font-picker' })
     fontSel.value = ff
     for (const f of FONTS) {
@@ -149,7 +143,6 @@ export function activate(aether) {
       previewBox.style.fontFamily = ff
     })
 
-    // Size slider
     const range = h('input', { type: 'range', min: '10', max: '24', step: '1' })
     range.value = String(fs)
     const valSpan = h('span', { className: 'size-value' }, txt(fs + 'px'))
@@ -194,21 +187,6 @@ export function activate(aether) {
     root.appendChild(body)
   }
 
-  /* ── Hook into terminal lifecycle ── */
-
-  function injectInlinePanel() {
-    // Already injected?
-    if (document.querySelector('.terminal-settings-panel.ts-inline')) return
-
-    const container = document.querySelector('.terminal-container')
-    if (!container) return
-
-    const inline = buildInlinePanel()
-    inline.classList.add('ts-inline')
-    inline.style.display = 'none'
-    container.parentNode?.insertBefore(inline, container)
-  }
-
   /* ── Commands ── */
 
   aether.commands.register('builtin:open-settings', {
@@ -222,18 +200,8 @@ export function activate(aether) {
     category: 'Built-in',
     handler: () => toggleInlinePanel(),
   })
-
-  // Listen for phase changes
-  aether.events.on('app:phase', (phase) => {
-    if (phase === 'terminal') {
-      // Inject inline panel into toolbar
-      setTimeout(injectInlinePanel, 50)
-    }
-  })
 }
 
 export function deactivate() {
-  // Clean up inline panel if it exists
-  const inline = document.querySelector('.terminal-settings-panel.ts-inline')
-  if (inline) inline.remove()
+  // No-op
 }
