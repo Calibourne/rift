@@ -110,7 +110,12 @@ export function activate(aether) {
         className: 'back-btn',
         onClick: () => {
           const def = aether.settings.get('default_shell')
-          aether.events.emit('app:phase', def ? 'terminal' : 'select')
+          if (def && def.path) {
+            aether.events.emit('app:phase', 'terminal')
+            aether.events.emit('shell:selected', def)
+          } else {
+            aether.events.emit('app:phase', 'select')
+          }
         },
       }, txt('\u2190 Back')),
       h('h1', {}, txt('Settings'))
@@ -121,7 +126,7 @@ export function activate(aether) {
 
     const previewBox = h('div', {
       className: 'preview-box',
-      style: { fontFamily: ff, fontSize: fs, lineHeight: 1.5 },
+      style: { fontFamily: ff, fontSize: fs + 'px', lineHeight: 1.5 },
     },
       h('div', { className: 'preview-header' }, txt('Preview')),
       h('div', {},
@@ -152,9 +157,9 @@ export function activate(aether) {
     range.addEventListener('input', () => {
       fs = Number(range.value)
       valSpan.textContent = fs + 'px'
-      previewBox.style.fontSize = String(fs)
+      previewBox.style.fontSize = fs + 'px'
       const last = previewBox.lastElementChild
-      if (last) last.style.fontSize = String(fs - 2)
+      if (last) last.style.fontSize = (fs - 2) + 'px'
     })
 
     saveBtn.addEventListener('click', async () => {
@@ -165,7 +170,12 @@ export function activate(aether) {
         await aether.settings.set('font_family', ff)
         await aether.settings.set('font_size', fs)
         const def = aether.settings.get('default_shell')
-        aether.events.emit('app:phase', def ? 'terminal' : 'select')
+        if (def && def.path) {
+          aether.events.emit('app:phase', 'terminal')
+          aether.events.emit('shell:selected', def)
+        } else {
+          aether.events.emit('app:phase', 'select')
+        }
       } catch (e) {
         errorP.textContent = String(e)
         saveBtn.disabled = false
