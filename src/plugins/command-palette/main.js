@@ -155,13 +155,14 @@ export function activate(aether) {
     handler: () => open(),
   })
 
-  // Global keybinding: Ctrl+P
+  // Global keybinding: Ctrl+P (capture phase — fires before xterm can stop it)
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
       e.preventDefault()
+      e.stopPropagation()
       open()
     }
-  })
+  }, true)
 }
 
 export function deactivate() {

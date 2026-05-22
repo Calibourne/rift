@@ -39,21 +39,6 @@ export function activate(aether) {
     tabEl = h('div', { className: 'tab' }, txt('Terminal'))
     rightEl = h('div', { className: 'toolbar-right' })
 
-    // Close button
-    const closeBtn = h('button', {
-      className: 'close-btn',
-      onClick: () => aether.commands.execute('builtin:close-terminal'),
-    }, txt('Close'))
-    rightEl.appendChild(closeBtn)
-
-    // Settings gear
-    const gearBtn = h('button', {
-      className: 'gear-btn',
-      title: 'Settings',
-      onClick: () => aether.commands.execute('builtin:toggle-settings-panel'),
-    }, txt('⚙'))
-    rightEl.appendChild(gearBtn)
-
     toolbarEl.appendChild(tabEl)
     toolbarEl.appendChild(rightEl)
 
@@ -84,10 +69,8 @@ export function activate(aether) {
       title: def.title || def.label,
       onClick: () => def.onClick && def.onClick(),
     }, txt(def.label))
-    // Insert before Close
-    const closeBtn = rightEl.querySelector('.close-btn')
-    if (closeBtn) rightEl.insertBefore(btn, closeBtn)
-    else rightEl.appendChild(btn)
+    // Append to right section
+    rightEl.appendChild(btn)
   })
 
   aether.events.on('ui:button-removed', ({ id }) => {
