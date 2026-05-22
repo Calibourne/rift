@@ -48,18 +48,6 @@
   background: var(--aether-cardHover, #1e1e34);
 }
 
-/* Settings panel (between toolbar and terminal) */
-.terminal-settings-panel {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 16px;
-  background: var(--aether-chromeBg, #14142a);
-  border-bottom: 1px solid var(--aether-chromeBorder, #2a2a3e);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-
 /* Terminal container */
 .terminal-container {
   flex: 1;
