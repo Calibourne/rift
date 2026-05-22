@@ -1,11 +1,8 @@
 /**
  * @aether/settings
  *
- * Two modes:
- *   1. Inline panel — slides down from toolbar (font + size quick controls)
- *   2. Full page — standalone settings view
- *
- * Both control the same underlying settings store.
+ * Telescope-style floating modal for font, size, and theme.
+ * Ctrl+, to open. Esc to close. Tab to navigate.
  */
 
 import './style.css'
@@ -27,6 +24,29 @@ const FONTS = [
   { l: 'Courier New',            v: "'Courier New',monospace" },
 ]
 
+const COLOR_KEYS = [
+  ['bg', 'background'], ['fg', 'foreground'],
+  ['cur', 'cursor'], ['sel', 'selectionBackground'],
+  ['blk', 'black'], ['red', 'red'],
+  ['grn', 'green'], ['yel', 'yellow'],
+  ['blu', 'blue'], ['mag', 'magenta'],
+  ['cya', 'cyan'], ['wht', 'white'],
+  ['bBlk', 'brightBlack'], ['bRed', 'brightRed'],
+  ['bGrn', 'brightGreen'], ['bYel', 'brightYellow'],
+  ['bBlu', 'brightBlue'], ['bMag', 'brightMagenta'],
+  ['bCya', 'brightCyan'], ['bWht', 'brightWhite'],
+]
+
+const DEFAULT_THEME = {
+  background: '#0e0e1a', foreground: '#d0d0d0', cursor: '#e0e0e0',
+  selectionBackground: '#334',
+  black: '#1a1a2e', red: '#e57373', green: '#81c784', yellow: '#ffd54f',
+  blue: '#64b5f6', magenta: '#ce93d8', cyan: '#4dd0e1', white: '#d0d0d0',
+  brightBlack: '#444', brightRed: '#ef9a9a', brightGreen: '#a5d6a7',
+  brightYellow: '#fff176', brightBlue: '#90caf9', brightMagenta: '#e1bee7',
+  brightCyan: '#80deea', brightWhite: '#f5f5f5',
+}
+
 const h = (tag, attrs, ...kids) => {
   const e = document.createElement(tag)
   for (const [k, v] of Object.entries(attrs || {})) {
@@ -41,163 +61,164 @@ const h = (tag, attrs, ...kids) => {
 const txt = (s) => document.createTextNode(s)
 
 export function activate(aether) {
-  let inlineVisible = false
+  let modal = null
+  let colorEditorOpen = false
 
-  /* ── Inline panel (populates toolbar's .terminal-settings-panel) ── */
+  /* ── Modal lifecycle ── */
 
-  function injectInlinePanel() {
-    const panel = document.querySelector('.terminal-settings-panel')
-    if (!panel || panel.querySelector('.ts-setting')) return
+  function open() {
+    if (modal) return
+    modal = buildModal()
+    document.body.appendChild(modal)
+    const first = modal.querySelector('select, input')
+    if (first) setTimeout(() => first.focus(), 50)
+    const onKey = (e) => { if (e.key === 'Escape') close() }
+    document.addEventListener('keydown', onKey)
+    modal._closeHandler = onKey
+  }
 
-    // Font selector
+  function close() {
+    if (!modal) return
+    if (modal._closeHandler) document.removeEventListener('keydown', modal._closeHandler)
+    modal.remove()
+    modal = null
+  }
+
+  /* ── Build modal DOM ── */
+
+  function buildModal() {
+    const ff = aether.settings.get('font_family') || FONTS[0].v
+    const fs = aether.settings.get('font_size') || 14
+
     const fontSel = h('select', { className: 'ts-select' })
-    fontSel.value = aether.settings.get('font_family') || FONTS[0].v
+    fontSel.value = ff
     for (const f of FONTS) {
-      const opt = h('option', { value: f.v }, txt(f.l))
-      fontSel.appendChild(opt)
+      fontSel.appendChild(h('option', { value: f.v }, txt(f.l)))
     }
-    fontSel.addEventListener('change', () => {
-      aether.settings.set('font_family', fontSel.value)
-    })
+    fontSel.addEventListener('change', () => aether.settings.set('font_family', fontSel.value))
 
-    const fontLbl = h('label', { className: 'ts-setting' },
-      h('span', { className: 'ts-label' }, txt('Font')), fontSel
-    )
-    panel.appendChild(fontLbl)
-
-    // Size slider
     const range = h('input', { type: 'range', min: '10', max: '24', step: '1' })
-    range.value = String(aether.settings.get('font_size') || 14)
-    const valSpan = h('span', { className: 'ts-size-value' }, txt(range.value + 'px'))
-
+    range.value = String(fs)
+    const valSpan = h('span', { className: 'ts-size-value' }, txt(fs + 'px'))
     range.addEventListener('input', () => {
       const sz = Number(range.value)
       valSpan.textContent = sz + 'px'
       aether.settings.set('font_size', sz)
     })
 
-    const sizeCtrl = h('div', { className: 'ts-size-control' }, range, valSpan)
-    const sizeLbl = h('label', { className: 'ts-setting' },
-      h('span', { className: 'ts-label' }, txt('Size')), sizeCtrl
+    const themeSel = h('select', { className: 'ts-select' })
+    const currentTheme = aether.settings.get('theme') || 'aether-dark'
+    loadThemeList(themeSel, currentTheme)
+    themeSel.addEventListener('change', () => {
+      aether.settings.set('theme', themeSel.value)
+    })
+
+    const editBtn = h('button', { className: 'sm-edit-colors' }, txt('▸ Edit Colors'))
+    const colorGrid = h('div', { className: 'sm-color-grid', style: { display: 'none' } })
+    const themeColors = { ...DEFAULT_THEME }
+    editBtn.addEventListener('click', () => {
+      colorEditorOpen = !colorEditorOpen
+      colorGrid.style.display = colorEditorOpen ? 'grid' : 'none'
+      editBtn.textContent = colorEditorOpen ? '▾ Edit Colors' : '▸ Edit Colors'
+      if (colorEditorOpen) loadThemeColors(themeColors, colorGrid, aether)
+    })
+
+    const resetBtn = h('button', { className: 'sm-reset-btn' }, txt('Reset to preset'))
+    resetBtn.addEventListener('click', async () => {
+      const name = themeSel.value
+      if (name === 'aether-dark') {
+        Object.assign(themeColors, DEFAULT_THEME)
+      } else {
+        try {
+          const raw = await aether.api.invoke('read_theme_file', { name })
+          Object.assign(themeColors, JSON.parse(raw))
+        } catch { Object.assign(themeColors, DEFAULT_THEME) }
+      }
+      renderColorGrid(themeColors, colorGrid, aether)
+      applyThemeToTerminal(themeColors, aether)
+    })
+
+    return h('div', { className: 'settings-modal-overlay' },
+      h('div', { className: 'settings-modal' },
+        h('div', { className: 'settings-modal-header' }, txt('⚙ aether settings')),
+        h('div', { className: 'settings-modal-body' },
+          h('div', { className: 'sm-row' },
+            h('span', { className: 'sm-label' }, txt('Font Family')),
+            fontSel,
+          ),
+          h('div', { className: 'sm-row' },
+            h('span', { className: 'sm-label' }, txt('Font Size')),
+            h('div', { className: 'ts-size-control' }, range, valSpan),
+          ),
+          h('div', { className: 'sm-row' },
+            h('span', { className: 'sm-label' }, txt('Theme')),
+            h('div', { className: 'sm-theme-row' }, themeSel, editBtn),
+            colorGrid,
+            resetBtn,
+          ),
+        ),
+        h('div', { className: 'settings-modal-footer' }, txt('Esc close · Tab nav')),
+      ),
     )
-    panel.appendChild(sizeLbl)
   }
 
-  function toggleInlinePanel() {
-    inlineVisible = !inlineVisible
-    let panel = document.querySelector('.terminal-settings-panel')
-    if (!panel) return
-    injectInlinePanel()
-    panel.style.display = inlineVisible ? 'flex' : 'none'
+  /* ── Theme helpers ── */
+
+  async function loadThemeList(sel, current) {
+    try {
+      const themes = await aether.api.invoke('list_themes')
+      sel.innerHTML = ''
+      for (const t of themes) {
+        sel.appendChild(h('option', { value: t }, txt(t)))
+      }
+      sel.value = current
+    } catch {
+      sel.innerHTML = '<option value="aether-dark">aether-dark</option>'
+    }
   }
 
-  // Debug: log when toggle is executed
-  console.log('[settings] plugin activated, toggle-settings-panel command registered')
+  async function loadThemeColors(colors, grid, aether) {
+    const name = aether.settings.get('theme') || 'aether-dark'
+    try {
+      const raw = await aether.api.invoke('read_theme_file', { name })
+      Object.assign(colors, JSON.parse(raw))
+    } catch {
+      Object.assign(colors, DEFAULT_THEME)
+    }
+    renderColorGrid(colors, grid, aether)
+  }
 
-  /* ── Full settings page ── */
-
-  function renderFullPage() {
-    const root = document.getElementById('root')
-    if (!root) return
-    root.innerHTML = ''
-    root.classList.remove('shell-selector-mode', 'terminal-mode')
-
-    let ff = aether.settings.get('font_family') || FONTS[0].v
-    let fs = aether.settings.get('font_size') || 14
-
-    const header = h('div', { className: 'settings-header' },
-      h('button', {
-        className: 'back-btn',
-        onClick: () => {
-          const def = aether.settings.get('default_shell')
-          if (def && def.path) {
-            aether.events.emit('app:phase', 'terminal')
-            aether.events.emit('shell:selected', def)
-          } else {
-            aether.events.emit('app:phase', 'select')
+  function renderColorGrid(colors, grid, aether) {
+    grid.innerHTML = ''
+    for (const [label, key] of COLOR_KEYS) {
+      const val = colors[key] || '#000'
+      const swatch = h('span', { className: 'sm-swatch', style: { background: val } })
+      const input = h('input', {
+        className: 'sm-hex-input',
+        type: 'text',
+        maxLength: '7',
+        value: val,
+        onInput: () => {
+          const v = input.value
+          if (/^#[0-9a-f]{6}$/i.test(v)) {
+            swatch.style.background = v
+            colors[key] = v
+            applyThemeToTerminal(colors, aether)
           }
         },
-      }, txt('\u2190 Back')),
-      h('h1', {}, txt('Settings'))
-    )
-
-    const errorP = h('p', { className: 'settings-error' })
-    const saveBtn = h('button', { className: 'save-btn' }, txt('Save'))
-
-    const previewBox = h('div', {
-      className: 'preview-box',
-      style: { fontFamily: ff, fontSize: fs + 'px', lineHeight: 1.5 },
-    },
-      h('div', { className: 'preview-header' }, txt('Preview')),
-      h('div', {},
-        h('span', { style: { color: '#e57373' } }, txt('\u03bb ')),
-        h('span', { style: { color: '#81c784' } }, txt('~ ')),
-        h('span', { style: { color: '#64b5f6' } }, txt('echo ')),
-        h('span', { style: { color: '#ffd54f' } }, txt('"hello from nf"'))
-      ),
-      h('div', { style: { color: '#888' } }, txt('\u279c ~ ls -la')),
-      h('div', { style: { color: '#888', fontSize: fs - 2 } },
-        txt('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 /home/user \u2500'))
-    )
-
-    const fontSel = h('select', { className: 'font-picker' })
-    fontSel.value = ff
-    for (const f of FONTS) {
-      const opt = h('option', { value: f.v }, txt(f.l))
-      fontSel.appendChild(opt)
+      })
+      const lbl = h('span', { className: 'sm-color-label' }, txt(label))
+      const row = h('div', { className: 'sm-color-row' }, lbl, swatch, input)
+      grid.appendChild(row)
     }
-    fontSel.addEventListener('change', () => {
-      ff = fontSel.value
-      previewBox.style.fontFamily = ff
-    })
+  }
 
-    const range = h('input', { type: 'range', min: '10', max: '24', step: '1' })
-    range.value = String(fs)
-    const valSpan = h('span', { className: 'size-value' }, txt(fs + 'px'))
-    range.addEventListener('input', () => {
-      fs = Number(range.value)
-      valSpan.textContent = fs + 'px'
-      previewBox.style.fontSize = fs + 'px'
-      const last = previewBox.lastElementChild
-      if (last) last.style.fontSize = (fs - 2) + 'px'
-    })
-
-    saveBtn.addEventListener('click', async () => {
-      saveBtn.disabled = true
-      saveBtn.textContent = 'Saving\u2026'
-      errorP.textContent = ''
-      try {
-        await aether.settings.set('font_family', ff)
-        await aether.settings.set('font_size', fs)
-        const def = aether.settings.get('default_shell')
-        if (def && def.path) {
-          aether.events.emit('app:phase', 'terminal')
-          aether.events.emit('shell:selected', def)
-        } else {
-          aether.events.emit('app:phase', 'select')
-        }
-      } catch (e) {
-        errorP.textContent = String(e)
-        saveBtn.disabled = false
-        saveBtn.textContent = 'Save'
-      }
-    })
-
-    const body = h('div', { className: 'settings-body' },
-      h('label', { className: 'setting-row' },
-        h('span', { className: 'setting-label' }, txt('Terminal font')), fontSel
-      ),
-      h('label', { className: 'setting-row' },
-        h('span', { className: 'setting-label' }, txt('Font size')),
-        h('div', { className: 'size-control' }, range, valSpan)
-      ),
-      previewBox,
-      errorP,
-      saveBtn
-    )
-
-    root.appendChild(header)
-    root.appendChild(body)
+  function applyThemeToTerminal(colors, aether) {
+    const theme = {}
+    for (const [, key] of COLOR_KEYS) {
+      if (colors[key]) theme[key] = colors[key]
+    }
+    aether.events.emit('settings:changed', { key: 'theme', value: theme })
   }
 
   /* ── Commands ── */
@@ -205,16 +226,20 @@ export function activate(aether) {
   aether.commands.register('builtin:open-settings', {
     label: 'Open Settings',
     category: 'Built-in',
-    handler: () => renderFullPage(),
+    handler: () => open(),
   })
 
-  aether.commands.register('builtin:toggle-settings-panel', {
-    label: 'Toggle Settings Panel',
-    category: 'Built-in',
-    handler: () => toggleInlinePanel(),
-  })
+  // Ctrl+, hotkey (capture phase)
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+      e.preventDefault()
+      e.stopPropagation()
+      open()
+    }
+  }, true)
 }
 
 export function deactivate() {
-  // No-op
+  const overlay = document.querySelector('.settings-modal-overlay')
+  if (overlay) overlay.remove()
 }

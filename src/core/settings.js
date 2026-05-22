@@ -19,6 +19,7 @@ import { events } from './event-bus.js'
 const DEFAULTS = {
   font_family: "'JetBrainsMono Nerd Font','JetBrains Mono','Fira Code',monospace",
   font_size: 14,
+  theme: 'aether-dark',
 }
 
 function createSettings() {
