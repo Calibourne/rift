@@ -8,6 +8,8 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+nul
+__pycache__/
 
 # IDE
 .idea/
