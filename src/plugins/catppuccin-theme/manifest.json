@@ -1,0 +1,6 @@
+{
+  "name": "@rift/catppuccin-theme",
+  "version": "0.1.0",
+  "description": "Catppuccin Mocha color scheme",
+  "main": "main.js"
+}

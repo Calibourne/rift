@@ -66,6 +66,8 @@ export function createAPI() {
       hidePanel:     (id) => ui.hidePanel(id),
       registerTheme: (def) => ui.registerTheme(def),
       applyTheme:    (name) => ui.applyTheme(name),
+      getTheme:      (name) => ui.getTheme(name),
+      listThemes:    () => ui.listThemes(),
       injectCSS:     (css, id) => ui.injectCSS(css, id),
     },
 

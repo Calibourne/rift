@@ -103,10 +103,10 @@ export function activate(rift) {
     })
 
     const themeSel = h('select', { className: 'ts-select' })
-    const currentTheme = rift.settings.get('theme') || 'rift-dark'
+    const currentTheme = rift.settings.get('theme_name') || 'rift-dark'
     loadThemeList(themeSel, currentTheme)
     themeSel.addEventListener('change', () => {
-      rift.settings.set('theme', themeSel.value)
+      applyNamedTheme(rift, themeSel.value)
     })
 
     const editBtn = h('button', { className: 'sm-edit-colors' }, txt('▸ Edit Colors'))
@@ -122,7 +122,10 @@ export function activate(rift) {
     const resetBtn = h('button', { className: 'sm-reset-btn' }, txt('Reset to preset'))
     resetBtn.addEventListener('click', async () => {
       const name = themeSel.value
-      if (name === 'rift-dark') {
+      const theme = rift.ui.getTheme(name)
+      if (theme) {
+        Object.assign(themeColors, theme.colors)
+      } else if (name === 'rift-dark') {
         Object.assign(themeColors, DEFAULT_THEME)
       } else {
         try {
@@ -160,9 +163,14 @@ export function activate(rift) {
 
   async function loadThemeList(sel, current) {
     try {
-      const themes = await rift.api.invoke('list_themes')
+      const fileThemes = await rift.api.invoke('list_themes')
+      const builtinThemes = rift.ui.listThemes()
+      const seen = new Set()
       sel.innerHTML = ''
-      for (const t of themes) {
+      // File-based themes first, then JS-registered builtins (deduped)
+      for (const t of [...fileThemes, ...builtinThemes]) {
+        if (seen.has(t)) continue
+        seen.add(t)
         sel.appendChild(h('option', { value: t }, txt(t)))
       }
       sel.value = current
@@ -171,13 +179,44 @@ export function activate(rift) {
     }
   }
 
+  function applyNamedTheme(rift, name) {
+    rift.settings.set('theme_name', name)
+    // Apply chrome UI colors
+    rift.ui.applyTheme(name)
+    // Apply terminal colors if theme is registered in JS
+    const theme = rift.ui.getTheme(name)
+    if (theme) {
+      const colors = theme.colors
+      const termTheme = {}
+      for (const [, key] of COLOR_KEYS) {
+        if (colors[key]) termTheme[key] = colors[key]
+      }
+      applyThemeToTerminal(termTheme, rift)
+    } else {
+      // File-based theme: reload color grid
+      loadThemeColors({ ...DEFAULT_THEME }, document.querySelector('.sm-color-grid'), rift)
+    }
+  }
+
   async function loadThemeColors(colors, grid, rift) {
-    const name = rift.settings.get('theme') || 'rift-dark'
-    try {
-      const raw = await rift.api.invoke('read_theme_file', { name })
-      Object.assign(colors, JSON.parse(raw))
-    } catch {
-      Object.assign(colors, DEFAULT_THEME)
+    const name = rift.settings.get('theme_name') || 'rift-dark'
+    // Try JS-registered theme first, then file-based
+    const theme = rift.ui.getTheme(name)
+    if (theme) {
+      Object.assign(colors, theme.colors)
+      // Also apply terminal colors
+      const termTheme = {}
+      for (const [, key] of COLOR_KEYS) {
+        if (colors[key]) termTheme[key] = colors[key]
+      }
+      applyThemeToTerminal(termTheme, rift)
+    } else {
+      try {
+        const raw = await rift.api.invoke('read_theme_file', { name })
+        Object.assign(colors, JSON.parse(raw))
+      } catch {
+        Object.assign(colors, DEFAULT_THEME)
+      }
     }
     renderColorGrid(colors, grid, rift)
   }

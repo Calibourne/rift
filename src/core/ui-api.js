@@ -177,10 +177,18 @@ function createUI() {
     document.head.appendChild(style)
   }
 
+  function getTheme(name) {
+    return themes.get(name) || null
+  }
+
+  function listThemes() {
+    return [...themes.keys()]
+  }
+
   return {
     addButton, removeButton, getButtons,
     addPanel, removePanel, togglePanel, showPanel, hidePanel, getPanel, getPanels,
-    registerTheme, applyTheme,
+    registerTheme, applyTheme, getTheme, listThemes,
     injectCSS,
   }
 }

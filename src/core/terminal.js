@@ -48,6 +48,8 @@ function createTerminal() {
   let cleanups = []
   /** @type {ResizeObserver | null} */
   let resizeObserver = null
+  /** @type {object | null} */
+  let cachedTheme = null
 
   /**
    * Open a PTY session and render xterm.js into the given container.
@@ -76,7 +78,7 @@ function createTerminal() {
       cursorStyle: 'block',
       fontSize: 14,
       fontFamily: "'JetBrainsMono Nerd Font','JetBrains Mono','Fira Code',monospace",
-      theme: {
+      theme: cachedTheme || {
         background: '#0e0e1a', foreground: '#d0d0d0', cursor: '#e0e0e0',
         selectionBackground: '#334',
         black: '#1a1a2e', red: '#e57373', green: '#81c784', yellow: '#ffd54f',
@@ -159,6 +161,7 @@ function createTerminal() {
       } else if (key === 'font_family') {
         term.options.fontFamily = value
       } else if (key === 'theme') {
+        cachedTheme = value
         term.options.theme = value
       }
     })

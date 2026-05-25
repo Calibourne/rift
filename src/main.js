@@ -8,6 +8,7 @@
 import "@xterm/xterm/css/xterm.css"
 import "./style.css"
 
+import { invoke } from '@tauri-apps/api/core'
 import { settings } from "./core/settings.js"
 import { events } from "./core/event-bus.js"
 import { commands } from "./core/commands.js"
@@ -85,7 +86,34 @@ async function boot() {
   // 5. Load user plugins (from ~/.config/rift/plugins/)
   await pluginLoader.loadUserPlugins(api)
 
-  // 5. Wire up shell selection -> terminal launch
+  // 6. Register per-shell commands so they appear in Ctrl+P palette
+  //    This replaces the need for a separate shell selector modal.
+  try {
+    const shells = await invoke('list_shells')
+    for (const s of shells) {
+      const id = 'shell:' + s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      commands.register(id, {
+        label: s.name,
+        category: 'Shells',
+        handler: () => {
+          const info = { name: s.name, path: s.path, args: s.args }
+          settings.set('default_shell', info)
+          if (terminal.isActive()) terminal.close().then(() => {
+            events.emit('app:phase', 'terminal')
+            events.emit('shell:selected', info)
+          })
+          else {
+            events.emit('app:phase', 'terminal')
+            events.emit('shell:selected', info)
+          }
+        },
+      })
+    }
+  } catch (e) {
+    console.warn('[main] failed to list shells:', e)
+  }
+
+  // 7. Wire up shell selection -> terminal launch
   // The shell-selector plugin emits 'shell:selected'; we orchestrate
   // the actual PTY launch here so core modules don't need DOM coupling.
   events.on('shell:selected', async (shellInfo) => {

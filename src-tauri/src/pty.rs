@@ -47,7 +47,7 @@ pub fn spawn(
     for arg in shell_args {
         cmd.arg(arg);
     }
-    cmd.env("TERM", "xterm-256color");
+    cmd.env("TERM", "xterm-direct");
     if let Ok(home) = std::env::var("HOME") {
         cmd.cwd(home);
     }

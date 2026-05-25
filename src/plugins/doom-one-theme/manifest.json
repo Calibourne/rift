@@ -1,0 +1,6 @@
+{
+  "name": "@rift/doom-one-theme",
+  "version": "0.1.0",
+  "description": "Doom Emacs' doom-one color scheme",
+  "main": "main.js"
+}

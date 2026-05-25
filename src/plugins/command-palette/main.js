@@ -1,11 +1,19 @@
 /**
  * @rift/command-palette
  *
- * Ctrl+P overlay that lists all registered commands.
- * Type to filter, Enter to execute, Escape to close.
+ * Ctrl+P overlay.  Empty = quick actions only (kill, new, switch, settings).
+ * Type to search everything (shells, themes, commands).
+ * Enter to execute, Escape to close.
  */
 
 import './style.css'
+
+const QUICK = new Set([
+  'builtin:close-terminal',
+  'builtin:new-terminal',
+  'builtin:switch-shell',
+  'builtin:open-settings',
+])
 
 const h = (tag, attrs, ...kids) => {
   const e = document.createElement(tag)
@@ -31,7 +39,6 @@ export function activate(rift) {
     if (overlay) return
 
     commands = rift.commands.list()
-    selectedIndex = 0
 
     overlay = h('div', { className: 'command-palette-overlay' },
       h('div', { className: 'command-palette-modal' },
@@ -49,9 +56,9 @@ export function activate(rift) {
     )
 
     document.body.appendChild(overlay)
-    renderList(commands)
+    selectedIndex = 0
+    filterCommands() // shows quick actions
     setTimeout(() => input?.focus(), 50)
-
     setTimeout(() => {
       document.addEventListener('mousedown', clickOutside, { once: true })
     }, 0)
@@ -73,13 +80,23 @@ export function activate(rift) {
 
   function filterCommands() {
     const q = (input?.value || '').toLowerCase()
-    const filtered = commands.filter(c =>
-      c.label.toLowerCase().includes(q) ||
-      c.id.toLowerCase().includes(q) ||
-      (c.category || '').toLowerCase().includes(q)
-    )
+
+    let shown
+    if (!q) {
+      // Empty — quick actions only, in a fixed order
+      const order = ['builtin:new-terminal', 'builtin:switch-shell', 'builtin:close-terminal', 'builtin:open-settings']
+      shown = order.map(id => commands.find(c => c.id === id)).filter(Boolean)
+    } else {
+      // Typing — search everything
+      shown = commands.filter(c =>
+        c.label.toLowerCase().includes(q) ||
+        c.id.toLowerCase().includes(q) ||
+        (c.category || '').toLowerCase().includes(q)
+      )
+    }
+
     selectedIndex = 0
-    renderList(filtered)
+    renderList(shown)
   }
 
   function renderList(items) {
@@ -113,6 +130,19 @@ export function activate(rift) {
     items[selectedIndex]?.scrollIntoView({ block: 'nearest' })
   }
 
+  function getShown() {
+    const q = (input?.value || '').toLowerCase()
+    if (!q) {
+      const order = ['builtin:new-terminal', 'builtin:switch-shell', 'builtin:close-terminal', 'builtin:open-settings']
+      return order.map(id => commands.find(c => c.id === id)).filter(Boolean)
+    }
+    return commands.filter(c =>
+      c.label.toLowerCase().includes(q) ||
+      c.id.toLowerCase().includes(q) ||
+      (c.category || '').toLowerCase().includes(q)
+    )
+  }
+
   function handleKeyDown(e) {
     const items = list?.querySelectorAll('.command-palette-item') || []
 
@@ -121,14 +151,9 @@ export function activate(rift) {
       close()
     } else if (e.key === 'Enter') {
       e.preventDefault()
-      const q = (input?.value || '').toLowerCase()
-      const filtered = commands.filter(c =>
-        c.label.toLowerCase().includes(q) ||
-        c.id.toLowerCase().includes(q) ||
-        (c.category || '').toLowerCase().includes(q)
-      )
-      if (filtered[selectedIndex]) {
-        executeCommand(filtered[selectedIndex].id)
+      const shown = getShown()
+      if (shown[selectedIndex]) {
+        executeCommand(shown[selectedIndex].id)
       }
     } else if (e.key === 'ArrowDown') {
       e.preventDefault()
@@ -145,13 +170,6 @@ export function activate(rift) {
     close()
     rift.commands.execute(id)
   }
-
-  rift.commands.register('builtin:open-palette', {
-    label: 'Open Command Palette',
-    category: 'Built-in',
-    icon: '\u2318P',
-    handler: () => open(),
-  })
 
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
