@@ -43,21 +43,12 @@
       </feMerge>
     </filter>
 
-    <filter id="pointGlow" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-
   </defs>
 
   <!-- Background -->
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
 
-  <!-- ═══════ Outer dieselpunk containment ring ═══════ -->
+  <!-- Outer dieselpunk containment ring -->
   <g filter="url(#shadow)">
 
     <circle cx="256" cy="256"
@@ -66,16 +57,16 @@
             stroke="url(#outerSteel)"
             stroke-width="42"/>
 
-    <!-- Segmented armor plates — aligned to ring bounds -->
+    <!-- Segmented armor plates -->
     <g fill="#241E18"
        stroke="#7A674F"
        stroke-width="3">
 
-      <path d="M180 55 L332 55 L320 84 L192 84 Z"/>
-      <path d="M180 428 L332 428 L320 457 L192 457 Z"/>
+      <path d="M180 52 L332 52 L320 84 L192 84 Z"/>
+      <path d="M180 428 L332 428 L320 460 L192 460 Z"/>
 
-      <path d="M55 180 L84 192 L84 320 L55 332 Z"/>
-      <path d="M428 180 L457 192 L457 320 L428 332 Z"/>
+      <path d="M52 180 L84 192 L84 320 L52 332 Z"/>
+      <path d="M428 180 L460 192 L460 320 L428 332 Z"/>
 
       <path d="M104 108 L142 96 L180 140 L160 160 Z"/>
       <path d="M352 372 L408 404 L372 352 L344 344 Z"/>
@@ -115,7 +106,7 @@
 
   </g>
 
-  <!-- ═══════ Inner core plate ═══════ -->
+  <!-- Inner core plate -->
   <circle cx="256"
           cy="256"
           r="124"
@@ -123,7 +114,7 @@
           stroke="#4C4032"
           stroke-width="4"/>
 
-  <!-- ═══════ Cyan breach glow ═══════ -->
+  <!-- Cyan breach glow -->
   <path d="M178 128 L350 256 L178 384"
         stroke="url(#cyanCore)"
         stroke-width="56"
@@ -132,62 +123,29 @@
         opacity="0.9"
         filter="url(#glow)"/>
 
-  <!-- ═══════ Metallic rift edge (bevel) ═══════ -->
+  <!-- Metallic rift edge -->
   <path d="M185 140 L330 256 L185 372"
         stroke="url(#innerSteel)"
         stroke-width="22"
         stroke-linejoin="bevel"
         fill="none"/>
 
-  <!-- ═══════ Apex energy point ═══════ -->
-  <circle cx="350" cy="256" r="5" fill="#7CF7FF" filter="url(#pointGlow)"/>
-  <circle cx="350" cy="256" r="2" fill="#FFFFFF"/>
-
-  <!-- ═══════ Internal circuitry ═══════ -->
+  <!-- Internal circuitry -->
   <g stroke="#7CF7FF"
      stroke-width="2"
-     opacity="0.45"
-     fill="none">
+     opacity="0.45">
 
-    <!-- Upper traces -->
-    <path d="M 210 190 H 260 V 210 H 310"/>
-    <path d="M 228 208 H 278 V 228 H 320"/>
+    <path d="M228 208 H278 V228 H320"/>
+    <path d="M214 254 H270 V276 H318"/>
+    <path d="M224 308 H292 V328 H336"/>
 
-    <!-- Middle traces (through apex area) -->
-    <path d="M 195 246 H 250 V 240 H 290"/>
-    <path d="M 214 254 H 270 V 276 H 318"/>
-
-    <!-- Lower traces -->
-    <path d="M 224 290 H 282 V 310 H 330"/>
-    <path d="M 210 318 H 260 V 336 H 304"/>
-
-    <!-- Vertical routing trace -->
-    <path d="M 260 190 V 228"/>
-    <path d="M 278 228 V 276"/>
-    <path d="M 270 276 V 310"/>
-
-    <!-- Branch trace upper-left -->
-    <path d="M 210 190 V 170 H 240"/>
-
-    <!-- Branch trace lower-left -->
-    <path d="M 210 318 V 338 H 240"/>
+    <circle cx="278" cy="228" r="3" fill="#7CF7FF"/>
+    <circle cx="270" cy="276" r="3" fill="#7CF7FF"/>
+    <circle cx="292" cy="328" r="3" fill="#7CF7FF"/>
 
   </g>
 
-  <!-- Circuit nodes / vias -->
-  <g fill="#7CF7FF" opacity="0.5">
-    <circle cx="260" cy="190" r="3"/>
-    <circle cx="260" cy="210" r="2.5"/>
-    <circle cx="278" cy="228" r="3"/>
-    <circle cx="250" cy="240" r="2.5"/>
-    <circle cx="270" cy="276" r="3"/>
-    <circle cx="282" cy="310" r="2.5"/>
-    <circle cx="260" cy="318" r="3"/>
-    <circle cx="240" cy="170" r="2"/>
-    <circle cx="240" cy="338" r="2"/>
-  </g>
-
-  <!-- ═══════ Vent details ═══════ -->
+  <!-- Vent details -->
   <g fill="#2B241D">
     <rect x="226" y="102" width="60" height="8" rx="4"/>
     <rect x="226" y="116" width="60" height="8" rx="4"/>
