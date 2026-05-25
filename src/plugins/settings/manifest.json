@@ -1,5 +1,5 @@
 {
-  "name": "@aether/settings",
+  "name": "@rift/settings",
   "version": "0.1.0",
   "description": "Font, size, and theme settings panel",
   "main": "main.js",

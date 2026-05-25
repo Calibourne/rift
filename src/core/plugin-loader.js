@@ -1,11 +1,11 @@
 /**
- * Aether Plugin Loader
+ * Rift Plugin Loader
  *
  * Discovers plugins from two sources and activates them:
  *   1. Built-in plugins (bundled by Vite under src/plugins/)
- *   2. User plugins (~/.config/aether/plugins/<name>/)
+ *   2. User plugins (~/.config/rift/plugins/<name>/)
  *
- * Each plugin receives the full AetherAPI object and calls activate(aether).
+ * Each plugin receives the full RiftAPI object and calls activate(rift).
  * Errors in one plugin never crash another (try/catch per plugin).
  */
 
@@ -22,7 +22,7 @@ function createPluginLoader() {
    *
    * @param {object} mainModules     - path -> lazy import function
    * @param {object} manifestModules - path -> manifest object
-   * @param {object} api             - AetherAPI instance
+   * @param {object} api             - RiftAPI instance
    */
   async function loadBuiltins(mainModules, manifestModules, api) {
     if (!mainModules || typeof mainModules !== 'object') return
@@ -46,7 +46,7 @@ function createPluginLoader() {
   }
 
   /**
-   * Load user plugins from ~/.config/aether/plugins/<name>/.
+   * Load user plugins from ~/.config/rift/plugins/<name>/.
    * (Phase 3 implementation.)
    */
   async function loadUserPlugins(api) {

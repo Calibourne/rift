@@ -1,5 +1,5 @@
 /**
- * @aether/command-palette
+ * @rift/command-palette
  *
  * Ctrl+P overlay that lists all registered commands.
  * Type to filter, Enter to execute, Escape to close.
@@ -20,7 +20,7 @@ const h = (tag, attrs, ...kids) => {
 }
 const txt = (s) => document.createTextNode(s)
 
-export function activate(aether) {
+export function activate(rift) {
   let overlay = null
   let input = null
   let list = null
@@ -28,9 +28,9 @@ export function activate(aether) {
   let commands = []
 
   function open() {
-    if (overlay) return // already open
+    if (overlay) return
 
-    commands = aether.commands.list()
+    commands = rift.commands.list()
     selectedIndex = 0
 
     overlay = h('div', { className: 'command-palette-overlay' },
@@ -52,7 +52,6 @@ export function activate(aether) {
     renderList(commands)
     setTimeout(() => input?.focus(), 50)
 
-    // Click outside to close
     setTimeout(() => {
       document.addEventListener('mousedown', clickOutside, { once: true })
     }, 0)
@@ -144,18 +143,16 @@ export function activate(aether) {
 
   function executeCommand(id) {
     close()
-    aether.commands.execute(id)
+    rift.commands.execute(id)
   }
 
-  // Register the palette command
-  aether.commands.register('builtin:open-palette', {
+  rift.commands.register('builtin:open-palette', {
     label: 'Open Command Palette',
     category: 'Built-in',
     icon: '\u2318P',
     handler: () => open(),
   })
 
-  // Global keybinding: Ctrl+P (capture phase — fires before xterm can stop it)
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
       e.preventDefault()

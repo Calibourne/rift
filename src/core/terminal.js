@@ -1,8 +1,8 @@
 /**
- * Aether Terminal Manager
+ * Rift Terminal Manager
  *
  * Wraps xterm.js and the Rust PTY IPC.  Plugins never touch Tauri invoke
- * directly — they use `aether.terminal.*`.
+ * directly — they use `rift.terminal.*`.
  *
  * The terminal module owns:
  *   - xterm.js Terminal + FitAddon lifecycle

@@ -1,5 +1,5 @@
 /**
- * Aether Settings Manager
+ * Rift Settings Manager
  *
  * Wraps the Rust-backed `get_settings` / `update_settings` IPC commands and
  * adds change events.  Plugins read and write settings through this — they
@@ -19,7 +19,7 @@ import { events } from './event-bus.js'
 const DEFAULTS = {
   font_family: "'JetBrainsMono Nerd Font','JetBrains Mono','Fira Code',monospace",
   font_size: 14,
-  theme: 'aether-dark',
+  theme: 'rift-dark',
 }
 
 function createSettings() {

@@ -1,5 +1,5 @@
 /**
- * @aether/status-bar
+ * @rift/status-bar
  *
  * Thin status bar at the bottom showing:
  *   - Terminal info (cols x rows)
@@ -22,7 +22,7 @@ const h = (tag, attrs, ...kids) => {
 }
 const txt = (s) => document.createTextNode(s)
 
-export function activate(aether) {
+export function activate(rift) {
   let bar = null
   let leftEl = null
   let rightEl = null
@@ -43,18 +43,16 @@ export function activate(aether) {
 
   function updateInfo() {
     if (!leftEl || !rightEl) return
-    const info = aether.terminal.getInfo()
+    const info = rift.terminal.getInfo()
     leftEl.textContent = info.shell?.name || 'No shell'
     rightEl.textContent = `${info.cols} x ${info.rows}`
   }
 
-  // Update when terminal info changes
-  aether.events.on('pty:resize', () => updateInfo())
-  aether.events.on('pty:open', () => updateInfo())
-  aether.events.on('pty:exit', () => updateInfo())
+  rift.events.on('pty:resize', () => updateInfo())
+  rift.events.on('pty:open', () => updateInfo())
+  rift.events.on('pty:exit', () => updateInfo())
 
-  // Show/hide with terminal phase
-  aether.events.on('app:phase', (phase) => {
+  rift.events.on('app:phase', (phase) => {
     if (phase === 'terminal') {
       render()
     } else if (bar) {

@@ -1,8 +1,8 @@
-# Aether
+# Rift
 
 **Minimal, extensible terminal runtime.**  Like Neovim for your terminal.
 
-Aether is a thin core that provides PTY subprocess management, xterm.js
+Rift is a thin core that provides PTY subprocess management, xterm.js
 rendering, and a plugin API.  Everything else — shell selector, settings,
 toolbar, tabs, AI assistant, themes — is a plugin.
 
@@ -31,7 +31,7 @@ npm run build:linux    # deb + AppImage (Linux)
 │  shell-selector, settings, toolbar,         │
 │  command-palette, status-bar, themes, ...   │
 ├─────────────────────────────────────────────┤
-│  API LAYER  (aether.*)                      │
+│  API LAYER  (rift.*)                        │
 │  events · commands · terminal · ui ·        │
 │  settings · api (raw IPC)                   │
 ├──────────────────┬──────────────────────────┤
@@ -48,19 +48,19 @@ See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the full design.
 
 ## Plugin system
 
-Plugins are JavaScript modules that export `activate(aether)`:
+Plugins are JavaScript modules that export `activate(rift)`:
 
 ```js
-// ~/.config/aether/plugins/my-plugin/main.js
-export function activate(aether) {
-  aether.commands.register('my-plugin:hello', {
+// ~/.config/rift/plugins/my-plugin/main.js
+export function activate(rift) {
+  rift.commands.register('my-plugin:hello', {
     label: 'Say Hello',
-    handler: () => aether.terminal.write('hello from a plugin!\n')
+    handler: () => rift.terminal.write('hello from a plugin!\n')
   });
 }
 ```
 
-Drop a plugin in `~/.config/aether/plugins/<name>/` and it's loaded on next
+Drop a plugin in `~/.config/rift/plugins/<name>/` and it's loaded on next
 launch.  No recompilation, no config files to edit.
 
 ## Rust backend
@@ -84,7 +84,7 @@ logic.  All extensibility lives in the frontend.
 ## Project structure
 
 ```
-aether/
+rift/
 ├── src/                        # Frontend (vanilla JS + xterm.js)
 │   ├── main.js                 # Thin entry point
 │   ├── style.css               # Core layout styles
@@ -95,7 +95,7 @@ aether/
 │   │   ├── terminal.js
 │   │   ├── ui-api.js
 │   │   ├── plugin-loader.js
-│   │   └── aether-api.js
+│   │   └── rift-api.js
 │   └── plugins/                # Built-in plugins (bundled)
 │       ├── shell-selector/
 │       ├── settings/

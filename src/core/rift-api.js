@@ -1,16 +1,16 @@
 /**
- * AetherAPI — the complete plugin API surface
+ * RiftAPI — the complete plugin API surface
  *
  * This module assembles all core modules into a single API object that
- * gets passed to every plugin's `activate(aether)` function.
+ * gets passed to every plugin's `activate(rift)` function.
  *
  * Plugins see:
- *   aether.events      — pub/sub event bus
- *   aether.commands    — command registry
- *   aether.terminal    — PTY + xterm.js control
- *   aether.ui          — UI extensions (buttons, panels, themes)
- *   aether.settings    — persistent settings
- *   aether.api         — raw Tauri IPC escape hatch
+ *   rift.events      — pub/sub event bus
+ *   rift.commands    — command registry
+ *   rift.terminal    — PTY + xterm.js control
+ *   rift.ui          — UI extensions (buttons, panels, themes)
+ *   rift.settings    — persistent settings
+ *   rift.api         — raw Tauri IPC escape hatch
  *
  * No plugin should import from src/core/ directly.
  */
@@ -25,7 +25,7 @@ import { listen } from '@tauri-apps/api/event'
 import { pluginLoader } from './plugin-loader.js'
 
 /**
- * Create the full AetherAPI object.
+ * Create the full RiftAPI object.
  * New instances are created per-plugin to allow sandboxing in the future.
  * @returns {object} api
  */

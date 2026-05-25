@@ -1,5 +1,5 @@
 /**
- * Aether — minimal extensible terminal runtime
+ * Rift — minimal extensible terminal runtime
  *
  * This is the thin entry point.  It boots core modules, loads plugins,
  * and gets out of the way.  Everything else is a plugin.
@@ -13,7 +13,7 @@ import { events } from "./core/event-bus.js"
 import { commands } from "./core/commands.js"
 import { pluginLoader } from "./core/plugin-loader.js"
 import { terminal } from "./core/terminal.js"
-import { api } from "./core/aether-api.js"
+import { api } from "./core/rift-api.js"
 
 /* ── Boot sequence ── */
 
@@ -82,7 +82,7 @@ async function boot() {
   // Pass glob results to the plugin loader
   await pluginLoader.loadBuiltins(modules, manifests, api)
 
-  // 5. Load user plugins (from ~/.config/aether/plugins/)
+  // 5. Load user plugins (from ~/.config/rift/plugins/)
   await pluginLoader.loadUserPlugins(api)
 
   // 5. Wire up shell selection -> terminal launch
@@ -120,7 +120,7 @@ async function boot() {
 }
 
 boot().catch((e) => {
-  console.error("Aether boot failed:", e)
+  console.error("Rift boot failed:", e)
   document.getElementById("root").textContent =
     "Boot error: " + String(e)
 })

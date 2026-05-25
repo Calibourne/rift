@@ -1,5 +1,5 @@
 /**
- * Aether UI Extension API
+ * Rift UI Extension API
  *
  * Manages toolbar buttons, side panels, and theme injection.
  * Plugins add UI elements through this — they never manipulate the DOM
@@ -158,7 +158,7 @@ function createUI() {
     // Set CSS custom properties
     const root = document.documentElement
     for (const [key, value] of Object.entries(colors)) {
-      root.style.setProperty(`--aether-${key}`, value)
+      root.style.setProperty(`--rift-${key}`, value)
     }
     events.emit('theme:applied', { name, colors })
   }

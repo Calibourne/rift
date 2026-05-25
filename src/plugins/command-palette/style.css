@@ -15,8 +15,8 @@
   width: 520px;
   max-width: 90vw;
   max-height: 60vh;
-  background: var(--aether-cardBg, #1a1a2e);
-  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  background: var(--rift-cardBg, #1a1a2e);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   display: flex;
@@ -26,7 +26,7 @@
 
 .command-palette-input-wrap {
   padding: 10px 12px;
-  border-bottom: 1px solid var(--aether-chromeBorder, #2a2a3e);
+  border-bottom: 1px solid var(--rift-chromeBorder, #2a2a3e);
 }
 
 .command-palette-input {
@@ -34,13 +34,13 @@
   background: transparent;
   border: none;
   outline: none;
-  color: var(--aether-textBright, #f0f0f0);
+  color: var(--rift-textBright, #f0f0f0);
   font-size: 0.9375rem;
   font-family: inherit;
 }
 
 .command-palette-input::placeholder {
-  color: var(--aether-textMuted, #555);
+  color: var(--rift-textMuted, #555);
 }
 
 .command-palette-list {
@@ -60,7 +60,7 @@
 
 .command-palette-item:hover,
 .command-palette-item.selected {
-  background: var(--aether-cardHover, #2a2a4e);
+  background: var(--rift-cardHover, #2a2a4e);
 }
 
 .cpi-icon {
@@ -72,18 +72,18 @@
 
 .cpi-label {
   flex: 1;
-  color: var(--aether-textBright, #ddd);
+  color: var(--rift-textBright, #ddd);
   font-size: 0.8125rem;
 }
 
 .cpi-category {
-  color: var(--aether-textMuted, #666);
+  color: var(--rift-textMuted, #666);
   font-size: 0.6875rem;
   margin-right: 8px;
 }
 
 .cpi-id {
-  color: var(--aether-textMuted, #555);
+  color: var(--rift-textMuted, #555);
   font-size: 0.625rem;
   font-family: monospace;
 }
@@ -91,6 +91,6 @@
 .command-palette-empty {
   padding: 16px;
   text-align: center;
-  color: var(--aether-textMuted, #666);
+  color: var(--rift-textMuted, #666);
   font-size: 0.8125rem;
 }

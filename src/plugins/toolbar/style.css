@@ -5,8 +5,8 @@
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: var(--aether-chromeBg, #12121e);
-  border-bottom: 1px solid var(--aether-chromeBorder, #2a2a3e);
+  background: var(--rift-chromeBg, #12121e);
+  border-bottom: 1px solid var(--rift-chromeBorder, #2a2a3e);
   font-size: 0.8125rem;
   flex-shrink: 0;
 }
@@ -16,10 +16,10 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: var(--aether-cardBg, #1e1e34);
+  background: var(--rift-cardBg, #1e1e34);
   border-radius: 6px;
   font-weight: 500;
-  color: var(--aether-textBright, #ccc);
+  color: var(--rift-textBright, #ccc);
   flex: 1;
 }
 
@@ -32,9 +32,9 @@
 
 .plugin-btn {
   background: none;
-  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
   border-radius: 6px;
-  color: var(--aether-textMuted, #666);
+  color: var(--rift-textMuted, #666);
   cursor: pointer;
   font-size: 1rem;
   padding: 2px 8px;
@@ -43,16 +43,16 @@
 }
 
 .plugin-btn:hover {
-  color: var(--aether-textBright, #ccc);
+  color: var(--rift-textBright, #ccc);
   border-color: #5a5a7e;
-  background: var(--aether-cardHover, #1e1e34);
+  background: var(--rift-cardHover, #1e1e34);
 }
 
 /* Terminal container */
 .terminal-container {
   flex: 1;
   overflow: hidden;
-  background: var(--aether-background, #0e0e1a);
+  background: var(--rift-background, #0e0e1a);
   position: relative;
 }
 
@@ -67,5 +67,5 @@
 }
 
 .terminal-mode #root {
-  background: var(--aether-background, #0e0e1a);
+  background: var(--rift-background, #0e0e1a);
 }

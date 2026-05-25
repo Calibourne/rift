@@ -1,5 +1,5 @@
 /**
- * Aether Event Bus
+ * Rift Event Bus
  *
  * Simple publish/subscribe with wildcard support.
  * Every core module and plugin communicates through this.

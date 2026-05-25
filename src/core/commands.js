@@ -1,5 +1,5 @@
 /**
- * Aether Command Registry
+ * Rift Command Registry
  *
  * Plugins register commands here.  The command palette (a built-in plugin)
  * displays them.  Any plugin can also execute commands programmatically.
@@ -9,7 +9,7 @@
  *   commands.register('my-plugin:hello', {
  *     label: 'Say Hello',
  *     category: 'My Plugin',
- *     handler: () => aether.terminal.write('hi!\n')
+ *     handler: () => rift.terminal.write('hi!\n')
  *   })
  *   commands.execute('builtin:open-settings')
  *   commands.list()  // [{ id, label, category }]

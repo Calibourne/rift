@@ -11,7 +11,7 @@
 }
 
 .shell-selector-mode #root {
-  background: var(--aether-chromeBg, #12121e);
+  background: var(--rift-chromeBg, #12121e);
 }
 
 .selector-header {
@@ -23,14 +23,14 @@
 .selector-header h1 {
   font-size: 1.75rem;
   font-weight: 600;
-  color: var(--aether-textBright, #f0f0f0);
+  color: var(--rift-textBright, #f0f0f0);
 }
 
 .settings-gear {
   background: none;
-  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
   border-radius: 6px;
-  color: var(--aether-textMuted, #666);
+  color: var(--rift-textMuted, #666);
   cursor: pointer;
   font-size: 1.125rem;
   padding: 4px 8px;
@@ -39,14 +39,14 @@
 }
 
 .settings-gear:hover {
-  color: var(--aether-textBright, #ccc);
+  color: var(--rift-textBright, #ccc);
   border-color: #5a5a7e;
-  background: var(--aether-cardHover, #1e1e34);
+  background: var(--rift-cardHover, #1e1e34);
 }
 
 .subtitle {
   font-size: 0.875rem;
-  color: var(--aether-textMuted, #888);
+  color: var(--rift-textMuted, #888);
   margin-top: -0.5rem;
 }
 
@@ -65,15 +65,15 @@
   gap: 6px;
   width: 120px;
   padding: 16px 12px;
-  border: 1px solid var(--aether-chromeBorder, #2a2a3e);
+  border: 1px solid var(--rift-chromeBorder, #2a2a3e);
   border-radius: 10px;
-  background: var(--aether-cardBg, #16162a);
+  background: var(--rift-cardBg, #16162a);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, transform 0.1s;
 }
 
 .shell-card:hover {
-  background: var(--aether-cardHover, #1e1e3a);
+  background: var(--rift-cardHover, #1e1e3a);
   border-color: #555;
   transform: translateY(-1px);
 }
@@ -89,17 +89,17 @@
 .shell-card .name {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--aether-textBright, #ccc);
+  color: var(--rift-textBright, #ccc);
   text-align: center;
 }
 
 .shell-card .version {
   font-size: 0.6875rem;
-  color: var(--aether-textMuted, #666);
+  color: var(--rift-textMuted, #666);
 }
 
 .shell-error {
-  color: var(--aether-red, #e57373);
+  color: var(--rift-red, #e57373);
   font-size: 0.8125rem;
   text-align: center;
 }
@@ -116,8 +116,8 @@
 }
 
 .switcher-modal {
-  background: var(--aether-chromeBg, #14142a);
-  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  background: var(--rift-chromeBg, #14142a);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
   border-radius: 10px;
   width: 380px;
   max-height: 60vh;
@@ -129,7 +129,7 @@
   padding: 14px 18px 0;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--aether-textBright, #f0f0f0);
+  color: var(--rift-textBright, #f0f0f0);
 }
 
 .switcher-modal-list {
@@ -142,7 +142,7 @@
 .switcher-modal-footer {
   padding: 0 18px 12px;
   font-size: 0.6875rem;
-  color: var(--aether-textMuted, #555);
+  color: var(--rift-textMuted, #555);
   text-align: right;
 }
 
@@ -156,7 +156,7 @@
   transition: background 0.1s;
 }
 .switcher-item:hover {
-  background: var(--aether-cardHover, #1e1e34);
+  background: var(--rift-cardHover, #1e1e34);
 }
 
 .switcher-item .icon {
@@ -168,16 +168,16 @@
 .switcher-item .sw-name {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--aether-textBright, #ccc);
+  color: var(--rift-textBright, #ccc);
 }
 
 .switcher-item .sw-version {
   font-size: 0.6875rem;
-  color: var(--aether-textMuted, #666);
+  color: var(--rift-textMuted, #666);
   margin-left: auto;
 }
 
 .switcher-item.sw-active {
-  background: var(--aether-cardBg, #1e1e34);
-  border: 1px solid var(--aether-accent, #64b5f6);
+  background: var(--rift-cardBg, #1e1e34);
+  border: 1px solid var(--rift-accent, #64b5f6);
 }

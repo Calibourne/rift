@@ -1,5 +1,5 @@
 {
-  "name": "@aether/status-bar",
+  "name": "@rift/status-bar",
   "version": "0.1.0",
   "description": "Bottom status bar with shell and terminal info",
   "main": "main.js"

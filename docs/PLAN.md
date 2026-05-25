@@ -12,7 +12,7 @@ Build the four infrastructure modules that everything else depends on.
 | 1.4 | `src/core/terminal.js` | xterm.js wrapper: open, close, write, resize, onData, events |
 | 1.5 | `src/core/ui-api.js` | Button panel, side panel, theme registry, CSS injection |
 | 1.6 | `src/core/plugin-loader.js` | Scan dirs, parse manifests, import modules, activate |
-| 1.7 | `src/core/aether-api.js` | Assemble all namespaces into single API object |
+| 1.7 | `src/core/rift-api.js` | Assemble all namespaces into single API object |
 
 **Checkpoint:** Core modules exist, can be imported, pass unit logic.
 
@@ -36,7 +36,7 @@ should work identically — but now every piece is a plugin using the API.
 
 | Step | Deliverable |
 |------|-------------|
-| 3.1 | Plugins load from `~/.config/aether/plugins/<name>/` |
+| 3.1 | Plugins load from `~/.config/rift/plugins/<name>/` |
 | 3.2 | User plugins override built-in plugins of the same name |
 | 3.3 | Hot-reload support for dev (watch dir, re-activate) |
 | 3.4 | Error isolation: one plugin's crash doesn't take down others |

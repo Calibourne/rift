@@ -1,5 +1,5 @@
 /*
- * Aether Core Styles
+ * Rift Core Styles
  *
  * Minimal reset + layout.  Plugin-specific styles live in each plugin's
  * own style.css and are injected via import.meta.glob → Vite bundling.
@@ -18,8 +18,8 @@
 html, body, #root {
   height: 100%;
   overflow: hidden;
-  background: var(--aether-background, #0e0e1a);
-  color: var(--aether-foreground, #d0d0d0);
+  background: var(--rift-background, #0e0e1a);
+  color: var(--rift-foreground, #d0d0d0);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -34,7 +34,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--aether-dim, #555);
+  color: var(--rift-dim, #555);
   font-size: 14px;
   user-select: none;
 }

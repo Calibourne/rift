@@ -1,12 +1,12 @@
 /**
- * @aether/default-theme
+ * @rift/default-theme
  *
  * Registers the default dark theme and applies it on boot.
  * Can be overridden by a user plugin named "default-theme".
  */
 
 const THEME = {
-  name: 'aether-dark',
+  name: 'rift-dark',
   colors: {
     background: '#0e0e1a',
     foreground: '#d0d0d0',
@@ -28,7 +28,6 @@ const THEME = {
     brightMagenta: '#e1bee7',
     brightCyan: '#80deea',
     brightWhite: '#f5f5f5',
-    // CSS custom properties for the UI chrome
     chromeBg: '#12121e',
     chromeBorder: '#2a2a3e',
     cardBg: '#16162a',
@@ -39,9 +38,9 @@ const THEME = {
   },
 }
 
-export function activate(aether) {
-  aether.ui.registerTheme(THEME)
-  aether.ui.applyTheme('aether-dark')
+export function activate(rift) {
+  rift.ui.registerTheme(THEME)
+  rift.ui.applyTheme('rift-dark')
 }
 
 export function deactivate() {

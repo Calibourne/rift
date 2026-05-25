@@ -1,5 +1,5 @@
 /**
- * @aether/settings
+ * @rift/settings
  *
  * Telescope-style floating modal for font, size, and theme.
  * Ctrl+, to open. Esc to close. Tab to navigate.
@@ -60,11 +60,9 @@ const h = (tag, attrs, ...kids) => {
 }
 const txt = (s) => document.createTextNode(s)
 
-export function activate(aether) {
+export function activate(rift) {
   let modal = null
   let colorEditorOpen = false
-
-  /* ── Modal lifecycle ── */
 
   function open() {
     if (modal) return
@@ -84,18 +82,16 @@ export function activate(aether) {
     modal = null
   }
 
-  /* ── Build modal DOM ── */
-
   function buildModal() {
-    const ff = aether.settings.get('font_family') || FONTS[0].v
-    const fs = aether.settings.get('font_size') || 14
+    const ff = rift.settings.get('font_family') || FONTS[0].v
+    const fs = rift.settings.get('font_size') || 14
 
     const fontSel = h('select', { className: 'ts-select' })
     fontSel.value = ff
     for (const f of FONTS) {
       fontSel.appendChild(h('option', { value: f.v }, txt(f.l)))
     }
-    fontSel.addEventListener('change', () => aether.settings.set('font_family', fontSel.value))
+    fontSel.addEventListener('change', () => rift.settings.set('font_family', fontSel.value))
 
     const range = h('input', { type: 'range', min: '10', max: '24', step: '1' })
     range.value = String(fs)
@@ -103,14 +99,14 @@ export function activate(aether) {
     range.addEventListener('input', () => {
       const sz = Number(range.value)
       valSpan.textContent = sz + 'px'
-      aether.settings.set('font_size', sz)
+      rift.settings.set('font_size', sz)
     })
 
     const themeSel = h('select', { className: 'ts-select' })
-    const currentTheme = aether.settings.get('theme') || 'aether-dark'
+    const currentTheme = rift.settings.get('theme') || 'rift-dark'
     loadThemeList(themeSel, currentTheme)
     themeSel.addEventListener('change', () => {
-      aether.settings.set('theme', themeSel.value)
+      rift.settings.set('theme', themeSel.value)
     })
 
     const editBtn = h('button', { className: 'sm-edit-colors' }, txt('▸ Edit Colors'))
@@ -120,27 +116,27 @@ export function activate(aether) {
       colorEditorOpen = !colorEditorOpen
       colorGrid.style.display = colorEditorOpen ? 'grid' : 'none'
       editBtn.textContent = colorEditorOpen ? '▾ Edit Colors' : '▸ Edit Colors'
-      if (colorEditorOpen) loadThemeColors(themeColors, colorGrid, aether)
+      if (colorEditorOpen) loadThemeColors(themeColors, colorGrid, rift)
     })
 
     const resetBtn = h('button', { className: 'sm-reset-btn' }, txt('Reset to preset'))
     resetBtn.addEventListener('click', async () => {
       const name = themeSel.value
-      if (name === 'aether-dark') {
+      if (name === 'rift-dark') {
         Object.assign(themeColors, DEFAULT_THEME)
       } else {
         try {
-          const raw = await aether.api.invoke('read_theme_file', { name })
+          const raw = await rift.api.invoke('read_theme_file', { name })
           Object.assign(themeColors, JSON.parse(raw))
         } catch { Object.assign(themeColors, DEFAULT_THEME) }
       }
-      renderColorGrid(themeColors, colorGrid, aether)
-      applyThemeToTerminal(themeColors, aether)
+      renderColorGrid(themeColors, colorGrid, rift)
+      applyThemeToTerminal(themeColors, rift)
     })
 
     return h('div', { className: 'settings-modal-overlay' },
       h('div', { className: 'settings-modal' },
-        h('div', { className: 'settings-modal-header' }, txt('⚙ aether settings')),
+        h('div', { className: 'settings-modal-header' }, txt('⚙ rift settings')),
         h('div', { className: 'settings-modal-body' },
           h('div', { className: 'sm-row' },
             h('span', { className: 'sm-label' }, txt('Font Family')),
@@ -162,33 +158,31 @@ export function activate(aether) {
     )
   }
 
-  /* ── Theme helpers ── */
-
   async function loadThemeList(sel, current) {
     try {
-      const themes = await aether.api.invoke('list_themes')
+      const themes = await rift.api.invoke('list_themes')
       sel.innerHTML = ''
       for (const t of themes) {
         sel.appendChild(h('option', { value: t }, txt(t)))
       }
       sel.value = current
     } catch {
-      sel.innerHTML = '<option value="aether-dark">aether-dark</option>'
+      sel.innerHTML = '<option value="rift-dark">rift-dark</option>'
     }
   }
 
-  async function loadThemeColors(colors, grid, aether) {
-    const name = aether.settings.get('theme') || 'aether-dark'
+  async function loadThemeColors(colors, grid, rift) {
+    const name = rift.settings.get('theme') || 'rift-dark'
     try {
-      const raw = await aether.api.invoke('read_theme_file', { name })
+      const raw = await rift.api.invoke('read_theme_file', { name })
       Object.assign(colors, JSON.parse(raw))
     } catch {
       Object.assign(colors, DEFAULT_THEME)
     }
-    renderColorGrid(colors, grid, aether)
+    renderColorGrid(colors, grid, rift)
   }
 
-  function renderColorGrid(colors, grid, aether) {
+  function renderColorGrid(colors, grid, rift) {
     grid.innerHTML = ''
     for (const [label, key] of COLOR_KEYS) {
       const val = colors[key] || '#000'
@@ -203,7 +197,7 @@ export function activate(aether) {
           if (/^#[0-9a-f]{6}$/i.test(v)) {
             swatch.style.background = v
             colors[key] = v
-            applyThemeToTerminal(colors, aether)
+            applyThemeToTerminal(colors, rift)
           }
         },
       })
@@ -213,23 +207,20 @@ export function activate(aether) {
     }
   }
 
-  function applyThemeToTerminal(colors, aether) {
+  function applyThemeToTerminal(colors, rift) {
     const theme = {}
     for (const [, key] of COLOR_KEYS) {
       if (colors[key]) theme[key] = colors[key]
     }
-    aether.events.emit('settings:changed', { key: 'theme', value: theme })
+    rift.events.emit('settings:changed', { key: 'theme', value: theme })
   }
 
-  /* ── Commands ── */
-
-  aether.commands.register('builtin:open-settings', {
+  rift.commands.register('builtin:open-settings', {
     label: 'Open Settings',
     category: 'Built-in',
     handler: () => open(),
   })
 
-  // Ctrl+, hotkey (capture phase)
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === ',') {
       e.preventDefault()

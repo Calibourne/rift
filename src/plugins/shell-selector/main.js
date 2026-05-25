@@ -1,5 +1,5 @@
 /**
- * @aether/shell-selector
+ * @rift/shell-selector
  *
  * Renders a grid of detected shells.  Clicking a shell opens a terminal.
  * This is the initial screen shown on app boot.
@@ -20,15 +20,10 @@ const h = (tag, attrs = {}, ...kids) => {
 }
 const txt = (s) => document.createTextNode(s)
 
-export function activate(aether) {
+export function activate(rift) {
   let rootEl = null
   let switchModal = null
 
-  /* ── Full-screen shell selector (first-run) ── */
-
-  /**
-   * Render the shell selector screen into #root.
-   */
   function render() {
     const root = document.getElementById('root')
     if (!root) return
@@ -38,10 +33,10 @@ export function activate(aether) {
     root.classList.add('shell-selector-mode')
 
     const header = h('div', { className: 'selector-header' },
-      h('h1', {}, txt('Aether')),
+      h('h1', {}, txt('Rift')),
       h('button', {
         className: 'settings-gear',
-        onClick: () => aether.commands.execute('builtin:open-settings'),
+        onClick: () => rift.commands.execute('builtin:open-settings'),
       }, txt('\u2699'))
     )
 
@@ -54,8 +49,7 @@ export function activate(aether) {
     )
     root.appendChild(sel)
 
-    // Fetch shells from backend
-    aether.api.invoke('list_shells').then(shells => {
+    rift.api.invoke('list_shells').then(shells => {
       grid.innerHTML = ''
       for (const s of shells) {
         const card = h('div', {
@@ -81,26 +75,22 @@ export function activate(aether) {
         path: shell.path,
         args: shell.args,
       }
-      // Remember this as the default shell
-      aether.settings.set('default_shell', info)
-
-      aether.events.emit('app:phase', 'terminal')
-      aether.events.emit('shell:selected', info)
+      rift.settings.set('default_shell', info)
+      rift.events.emit('app:phase', 'terminal')
+      rift.events.emit('shell:selected', info)
     } catch (e) {
       console.error('launch failed:', e)
     }
   }
 
-  // Listen for phase changes — render when we're in select mode
-  aether.events.on('app:phase', (phase) => {
+  rift.events.on('app:phase', (phase) => {
     if (phase === 'select') render()
   })
 
-  // Register the show-selector command
-  aether.commands.register('builtin:show-shell-selector', {
+  rift.commands.register('builtin:show-shell-selector', {
     label: 'Show Shell Selector',
     category: 'Built-in',
-    handler: () => aether.events.emit('app:phase', 'select'),
+    handler: () => rift.events.emit('app:phase', 'select'),
   })
 
   /* ── Shell switcher modal (Ctrl+T) ── */
@@ -124,9 +114,9 @@ export function activate(aether) {
   function buildSwitcher() {
     const list = h('div', { className: 'switcher-modal-list' })
 
-    aether.api.invoke('list_shells').then(shells => {
+    rift.api.invoke('list_shells').then(shells => {
       list.innerHTML = ''
-      const activeShell = aether.terminal.getInfo()?.shell
+      const activeShell = rift.terminal.getInfo()?.shell
       for (const s of shells) {
         const active = activeShell && activeShell.path === s.path
         const item = h('div', {
@@ -155,23 +145,22 @@ export function activate(aether) {
   async function switchTo(shell) {
     closeSwitcher()
     const info = { name: shell.name, path: shell.path, args: shell.args }
-    await aether.settings.set('default_shell', info)
+    await rift.settings.set('default_shell', info)
 
-    if (aether.terminal.isActive()) {
-      await aether.terminal.close()
+    if (rift.terminal.isActive()) {
+      await rift.terminal.close()
     }
 
-    aether.events.emit('app:phase', 'terminal')
-    aether.events.emit('shell:selected', info)
+    rift.events.emit('app:phase', 'terminal')
+    rift.events.emit('shell:selected', info)
   }
 
-  aether.commands.register('builtin:switch-shell', {
+  rift.commands.register('builtin:switch-shell', {
     label: 'Switch Shell',
     category: 'Built-in',
     handler: () => openSwitcher(),
   })
 
-  // Ctrl+T hotkey (capture phase)
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 't') {
       e.preventDefault()

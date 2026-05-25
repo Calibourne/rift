@@ -1,6 +1,6 @@
-# Aether Architecture
+# Rift Architecture
 
-Aether is a **minimal, extensible terminal runtime** — think Neovim, but for
+Rift is a **minimal, extensible terminal runtime** — think Neovim, but for
 terminal emulation.  The core provides only PTY management, terminal rendering,
 and a plugin API.  Everything else (tabs, themes, command palette, AI
 assistant) ships as plugins — or is written by users.
@@ -12,7 +12,7 @@ assistant) ships as plugins — or is written by users.
    no panes, no status bar, no AI features.  Those are all plugins.
 
 2. **Neovim-like extensibility** — Plugins are JavaScript modules that receive
-   an `AetherAPI` object.  They can subscribe to events, register commands,
+   a `RiftAPI` object.  They can subscribe to events, register commands,
    add UI elements, modify terminal behavior, and change themes — all without
    touching the Rust backend or recompiling.
 
@@ -20,9 +20,9 @@ assistant) ships as plugins — or is written by users.
    toolbar, and settings panel are plugins.  They ship with the app but can be
    replaced or disabled by user-written plugins of the same name.
 
-4. **Zero config to start** — Aether works out of the box with sensible
+4. **Zero config to start** — Rift works out of the box with sensible
    defaults.  Users find plugins through the command palette or by dropping
-   them in `~/.config/aether/plugins/`.
+   them in `~/.config/rift/plugins/`.
 
 ## Layer diagram
 
@@ -35,13 +35,13 @@ assistant) ships as plugins — or is written by users.
 │  └────┬────┘ └────┬─────┘ └────┬─────┘ └─────┬──────┘  │
 │       │           │            │              │         │
 ├───────┴───────────┴────────────┴──────────────┴─────────┤
-│  API LAYER  (aether.*)                                   │
-│  aether.events  aether.commands  aether.terminal         │
-│  aether.ui      aether.settings  aether.api (IPC)        │
+│  API LAYER  (rift.*)                                     │
+│  rift.events    rift.commands    rift.terminal            │
+│  rift.ui        rift.settings    rift.api (IPC)           │
 ├──────────────────────────────────────────────────────────┤
 │  CORE LAYER (frontend / src/core/)                       │
 │  plugin-loader   event-bus    commands   terminal.js     │
-│  settings        ui-api       aether-api                 │
+│  settings        ui-api       rift-api                   │
 ├──────────────────────┬───────────────────────────────────┤
 │  JS BOOT (main.js)   │  RUST BACKEND (src-tauri/)        │
 │  • app entry point   │  • pty.rs    — PTY lifecycle      │
@@ -60,273 +60,162 @@ remains exactly the 5 commands and 2 events from v0:
 |---------|---------|
 | `list_shells` | Discover available shells |
 | `launch_shell` | Spawn a PTY session |
-| `write_pty` | Send input to a shell |
-| `resize_pty` | Resize the PTY dimensions |
+| `write_pty` | Send keyboard input |
+| `resize_pty` | Resize terminal dimensions |
 | `kill_pty` | Terminate a shell session |
 
-| Event | Purpose |
-|-------|---------|
-| `pty-output-{id}` | PTY stdout → frontend |
-| `pty-exit-{id}` | PTY process exited |
+| Event | Fires when |
+|-------|------------|
+| `pty-output-{id}` | PTY produces stdout |
+| `pty-exit-{id}` | PTY process exits |
 
-## Plugin format
+## Plugin API
 
-```
-~/.config/aether/plugins/<name>/
-├── manifest.json         # Required: name, version, main, description
-└── main.js               # Required: exports activate(aether) { ... }
+Every plugin receives the full `RiftAPI` object when activated.  The API is
+structured as several namespaces:
 
-// Optional — loaded by main.js via import or fetch
-├── style.css              # Injected into the page on activation
-├── icon.svg               # Shown in command palette / plugin list
-└── ...                    # Any other assets (loaded by plugin itself)
-```
-
-### manifest.json
-
-```json
-{
-  "name": "my-plugin",
-  "version": "0.1.0",
-  "description": "What this plugin does",
-  "main": "main.js",
-  "contributes": {
-    "commands": [
-      { "id": "my-plugin:hello", "label": "Say Hello" }
-    ],
-    "themes": [],
-    "keybindings": []
-  }
-}
-```
-
-## Plugin API reference
-
-Every plugin receives the full `AetherAPI` object when activated.  The API is
-split into namespaces:
-
-### `aether.events` — Pub/sub event bus
+### `rift.events` — Pub/sub event bus
 
 ```js
-// Subscribe
-aether.events.on('pty:data', ({ ptyId, data }) => { ... })
-aether.events.on('pty:open', ({ ptyId, shell }) => { ... })
-aether.events.on('pty:exit', ({ ptyId }) => { ... })
-aether.events.on('app:phase', (phase) => { ... }) // 'select' | 'terminal' | 'settings'
+rift.events.on('pty:data', ({ ptyId, data }) => { ... })
+rift.events.on('pty:open', ({ ptyId, shell }) => { ... })
+rift.events.on('pty:exit', ({ ptyId }) => { ... })
+rift.events.on('app:phase', (phase) => { ... }) // 'select' | 'terminal' | 'settings'
 
-// Fire
-aether.events.emit('my-event', payload)
+// Custom events
+rift.events.emit('my-event', payload)
 
 // Unsubscribe
-const unsub = aether.events.on('pty:data', handler)
-unsub() // removes the listener
+const unsub = rift.events.on('pty:data', handler)
+// later: unsub()
 ```
 
-### `aether.commands` — Command registry + palette
+### `rift.commands` — Command registry + palette
 
 ```js
-// Register
-aether.commands.register('my-plugin:hello', {
+rift.commands.register('my-plugin:hello', {
   label: 'Say Hello',
   category: 'My Plugin',
-  icon: '👋',
-  handler: () => console.log('Hello from plugin!')
+  icon: '\u{1F44B}',
+  handler: () => rift.terminal.write('hello!\n')
 })
 
 // Execute programmatically
-aether.commands.execute('builtin:open-settings')
+rift.commands.execute('builtin:open-settings')
 
-// List all
-const all = aether.commands.list()
+// List all for the palette
+const all = rift.commands.list()
 ```
 
-### `aether.terminal` — Terminal control
+### `rift.terminal` — Terminal control
 
 ```js
-aether.terminal.write('echo hello\n')
-
-aether.terminal.getInfo()
-// => { ptyId, shell: { name, path }, cols, rows }
-
-aether.terminal.resize(cols, rows)
-
-// Subscribe to user keyboard input
-aether.terminal.onInput((data) => { ... })
-
-// Open a new terminal (returns ptyId)
-const id = await aether.terminal.open(shellPath, shellArgs)
-
-// Close current terminal
-aether.terminal.close()
-
-// Focus the terminal
-aether.terminal.focus()
+rift.terminal.write('echo hello\n')
+rift.terminal.getInfo()            // { ptyId, shell, cols, rows }
+rift.terminal.resize(cols, rows)
+rift.terminal.onInput((data) => { ... })   // keyboard input
+const id = await rift.terminal.open(shellPath, shellArgs)
+rift.terminal.close()
+rift.terminal.focus()
 ```
 
-### `aether.ui` — UI extensions
+### `rift.ui` — UI extensions
 
 ```js
-// Add a button to the toolbar
-aether.ui.addButton({
-  position: 'toolbar',  // 'toolbar' | 'status-left' | 'status-right'
+rift.ui.addButton({
   id: 'my-plugin-btn',
-  label: '🔍',
+  position: 'toolbar',       // 'toolbar' | 'status-left' | 'status-right'
+  label: '\u{1F50D}',
   title: 'Search',
   onClick: () => { ... }
 })
+rift.ui.removeButton('my-plugin-btn')
 
-// Remove a button
-aether.ui.removeButton('my-plugin-btn')
-
-// Add a side panel
-aether.ui.addPanel({
+rift.ui.addPanel({
   id: 'my-plugin-panel',
   title: 'My Panel',
-  side: 'right',       // 'left' | 'right'
-  element: myDomNode,
-  minWidth: 200,
+  side: 'right',
+  element: myDomElement,
+  minWidth: 250,
 })
+rift.ui.removePanel('my-plugin-panel')
+rift.ui.togglePanel('my-plugin-panel')
 
-// Remove panel
-aether.ui.removePanel('my-plugin-panel')
-
-// Toggle panel visibility
-aether.ui.togglePanel('my-plugin-panel')
-
-// Themes
-aether.ui.registerTheme({
+rift.ui.registerTheme({
   name: 'my-dark-theme',
-  colors: {
-    background: '#000',
-    foreground: '#fff',
-    cursor: '#0f0',
-    // ... full terminal theme map
-  }
+  colors: { background: '#000', ... }
 })
-
-aether.ui.applyTheme('my-dark-theme')
+rift.ui.applyTheme('my-dark-theme')
 ```
 
-### `aether.settings` — Persistent settings
+### `rift.settings` — Persistent settings
 
 ```js
-// Read
-const fontSize = aether.settings.get('font_size')
+const fontSize = rift.settings.get('font_size')
+rift.settings.set('font_size', 16)
 
-// Write
-aether.settings.set('font_size', 16)
+// Namespaced settings for plugins
+rift.settings.get('my-plugin:api_key')
+rift.settings.set('my-plugin:api_key', 'sk-...')
 
-// Plugin-scoped settings (stored under plugin namespace)
-aether.settings.get('my-plugin:api_key')
-aether.settings.set('my-plugin:api_key', 'sk-...')
-
-// React to changes
-aether.settings.onChange((key, value) => { ... })
+rift.settings.onChange((key, value) => { ... })
 ```
 
-### `aether.api` — Raw IPC escape hatch
+### `rift.api` — Raw IPC escape hatch
 
 ```js
-// Direct Tauri invoke
-const shells = await aether.api.invoke('list_shells')
-
-// Direct Tauri event listen
-const unsub = await aether.api.listen('pty-output-*', (ev) => { ... })
+const shells = await rift.api.invoke('list_shells')
+const unsub = await rift.api.listen('pty-output-*', (ev) => { ... })
 ```
 
-## Built-in plugins (ship with binary)
+## Built-in plugins
 
-These live in `src/plugins/` and are bundled by Vite.  They work exactly like
-user plugins — they use the same API.  Users can override them by placing a
-plugin with the same name in `~/.config/aether/plugins/`.
+Rift ships with these plugins in `src/plugins/`.  A user can replace any of
+them by dropping a plugin with the same name in `~/.config/rift/plugins/`.
 
-| Plugin | What it provides |
-|--------|-----------------|
-| `@aether/shell-selector` | Shell selection grid (initial screen) |
-| `@aether/settings` | Font/size/theme settings panel |
-| `@aether/toolbar` | Tab bar with shell name + buttons |
-| `@aether/command-palette` | Ctrl+P command palette |
-| `@aether/status-bar` | Bottom status bar |
-| `@aether/default-theme` | Default dark color scheme |
+| Plugin | Function |
+|--------|----------|
+| `@rift/shell-selector` | Shell selection grid (initial screen) |
+| `@rift/settings` | Font/size/theme settings panel |
+| `@rift/toolbar` | Tab bar with shell name + buttons |
+| `@rift/command-palette` | Ctrl+P command palette |
+| `@rift/status-bar` | Bottom status bar |
+| `@rift/default-theme` | Default dark color scheme |
 
-## Event reference
-
-### Core events (always available)
-
-| Event | Payload | When |
-|-------|---------|------|
-| `app:ready` | `{}` | Core modules initialized, plugins loaded |
-| `app:phase` | `'select' \| 'terminal' \| 'settings'` | App phase changes |
-| `pty:open` | `{ ptyId, shell }` | New PTY session created |
-| `pty:data` | `{ ptyId, data }` | Data from PTY → terminal |
-| `pty:resize` | `{ ptyId, cols, rows }` | Terminal resized |
-| `pty:exit` | `{ ptyId }` | PTY process exited |
-| `command:registered` | `{ id, command }` | New command registered |
-| `command:executed` | `{ id }` | Command executed |
-| `settings:changed` | `{ key, value }` | Setting modified |
-| `theme:applied` | `{ name }` | Theme applied |
-
-## Plugin lifecycle
+## Boot sequence
 
 ```
-app boot
-  └─ core modules initialize (event-bus, commands, settings)
-  └─ plugin-loader discovers plugins:
-      1. Load built-in plugins from src/plugins/
-      2. Load user plugins from ~/.config/aether/plugins/
-      3. For each plugin: read manifest.json, import main.js
-  └─ plugins receive AetherAPI, call activate(aether)
-  └─ app:ready emitted
-  └─ initial render (shell-selector)
+1. main.js calls boot()
+    ├─ Load persisted settings from Rust
+    ├─ Emit 'app:ready'
+    ├─ Register built-in commands
+    ├─ Load built-in plugins (Vite glob)
+    │    └─ Each plugin receives a RiftAPI and calls activate(rift)
+    ├─ Load user plugins from ~/.config/rift/plugins/
+    │    └─ plugins receive RiftAPI, call activate(rift)
+    ├─ Wire up shell:selected -> terminal.open()
+    └─ Emit 'app:phase' (auto-launch if default_shell set, else 'select')
 ```
 
-When a plugin is reloaded (hot-reload during dev):
-```
-app:phase → 'reloading-plugins'
-  └─ for each active plugin: deactivate() called (if exported)
-  └─ plugin-loader re-scans directories
-  └─ new plugins activated
-  └─ app:phase → previous phase
-```
-
-## File structure
+## File map
 
 ```
 src/
-├── main.js                       # Entry: boot core, load plugins, render
-├── style.css                     # Core styles (minimal, reset + layout)
+├── main.js                  # App entry point
+├── style.css                # Core layout + CSS custom properties
 ├── core/
-│   ├── event-bus.js              # Pub/sub event system
-│   ├── commands.js               # Command registry + palette
-│   ├── settings.js               # Settings manager (load/save via IPC)
-│   ├── terminal.js               # xterm.js wrapper
-│   ├── ui-api.js                 # UI extension host (toolbar, panels, themes)
-│   ├── plugin-loader.js          # Discover + activate plugins
-│   └── aether-api.js             # Assembles full AetherAPI object
-├── plugins/
-│   ├── shell-selector/
-│   │   ├── manifest.json
-│   │   ├── main.js
-│   │   └── style.css
-│   ├── settings/
-│   │   ├── manifest.json
-│   │   ├── main.js
-│   │   └── style.css
-│   ├── toolbar/
-│   │   ├── manifest.json
-│   │   ├── main.js
-│   │   └── style.css
-│   ├── command-palette/
-│   │   ├── manifest.json
-│   │   ├── main.js
-│   │   └── style.css
-│   ├── status-bar/
-│   │   ├── manifest.json
-│   │   ├── main.js
-│   │   └── style.css
-│   └── default-theme/
-│       ├── manifest.json
-│       └── main.js
-src-tauri/                        # Unchanged (Rust backend)
-├── ...
+│   ├── event-bus.js         # Pub/sub with wildcard support
+│   ├── commands.js          # Command registry
+│   ├── settings.js          # Persistent settings (wraps Rust IPC)
+│   ├── terminal.js          # xterm.js + PTY lifecycle
+│   ├── ui-api.js            # Buttons, panels, themes
+│   ├── plugin-loader.js     # Discovers + activates plugins
+│   └── rift-api.js          # Assembles full RiftAPI object
+└── plugins/
+    ├── shell-selector/      # src/plugins/shell-selector/
+    ├── settings/            # src/plugins/settings/
+    ├── toolbar/             # src/plugins/toolbar/
+    ├── command-palette/     # src/plugins/command-palette/
+    ├── status-bar/          # src/plugins/status-bar/
+    └── default-theme/       # src/plugins/default-theme/
 ```

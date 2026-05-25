@@ -1,5 +1,5 @@
 {
-  "name": "@aether/shell-selector",
+  "name": "@rift/shell-selector",
   "version": "0.1.0",
   "description": "Shell selection grid — the initial screen",
   "main": "main.js",

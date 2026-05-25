@@ -22,5 +22,5 @@ pub fn run() {
             config::read_theme_file,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running aether");
+        .expect("error while running rift");
 }

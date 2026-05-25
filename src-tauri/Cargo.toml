@@ -1,11 +1,11 @@
 [package]
-name = "aether"
+name = "rift"
 version = "0.1.0"
 edition = "2021"
 description = "Minimal terminal runtime"
 
 [lib]
-name = "aether_lib"
+name = "rift_lib"
 crate-type = ["lib", "cdylib"]
 
 [build-dependencies]

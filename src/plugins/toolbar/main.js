@@ -1,5 +1,5 @@
 /**
- * @aether/toolbar
+ * @rift/toolbar
  *
  * Renders a toolbar above the terminal with:
  *   - Shell name / tab label
@@ -22,7 +22,7 @@ const h = (tag, attrs, ...kids) => {
 }
 const txt = (s) => document.createTextNode(s)
 
-export function activate(aether) {
+export function activate(rift) {
   let toolbarEl = null
   let tabEl = null
   let rightEl = null
@@ -47,19 +47,18 @@ export function activate(aether) {
     root.appendChild(toolbarEl)
     root.appendChild(container)
 
-    window.__aether_toolbar = { toolbarEl, tabEl, rightEl, container }
+    window.__rift_toolbar = { toolbarEl, tabEl, rightEl, container }
   }
 
-  aether.events.on('shell:selected', (shell) => {
+  rift.events.on('shell:selected', (shell) => {
     if (tabEl) tabEl.textContent = shell.name || 'Terminal'
   })
 
-  aether.events.on('app:phase', (phase) => {
+  rift.events.on('app:phase', (phase) => {
     if (phase === 'terminal') render()
   })
 
-  // Plugin buttons via ui.addButton
-  aether.events.on('ui:button-added', (def) => {
+  rift.events.on('ui:button-added', (def) => {
     if (!rightEl) return
     const existing = rightEl.querySelector(`[data-btn-id="${def.id}"]`)
     if (existing) existing.remove()
@@ -69,24 +68,23 @@ export function activate(aether) {
       title: def.title || def.label,
       onClick: () => def.onClick && def.onClick(),
     }, txt(def.label))
-    // Append to right section
     rightEl.appendChild(btn)
   })
 
-  aether.events.on('ui:button-removed', ({ id }) => {
+  rift.events.on('ui:button-removed', ({ id }) => {
     if (!rightEl) return
     const btn = rightEl.querySelector(`[data-btn-id="${id}"]`)
     if (btn) btn.remove()
   })
 
-  window.__aether_getTerminalContainer = () => {
-    return window.__aether_toolbar?.container ?? document.querySelector('.terminal-container')
+  window.__rift_getTerminalContainer = () => {
+    return window.__rift_toolbar?.container ?? document.querySelector('.terminal-container')
   }
 }
 
 export function deactivate() {
   const root = document.getElementById('root')
   if (root) root.classList.remove('terminal-mode')
-  delete window.__aether_toolbar
-  delete window.__aether_getTerminalContainer
+  delete window.__rift_toolbar
+  delete window.__rift_getTerminalContainer
 }

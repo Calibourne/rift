@@ -11,8 +11,8 @@
 }
 
 .settings-modal {
-  background: var(--aether-chromeBg, #14142a);
-  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  background: var(--rift-chromeBg, #14142a);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
   border-radius: 10px;
   width: 420px;
   max-height: 80vh;
@@ -24,7 +24,7 @@
   padding: 14px 18px 0;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--aether-textBright, #f0f0f0);
+  color: var(--rift-textBright, #f0f0f0);
 }
 
 .settings-modal-body {
@@ -37,7 +37,7 @@
 .settings-modal-footer {
   padding: 0 18px 12px;
   font-size: 0.6875rem;
-  color: var(--aether-textMuted, #555);
+  color: var(--rift-textMuted, #555);
   text-align: right;
 }
 
@@ -53,7 +53,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--aether-textMuted, #888);
+  color: var(--rift-textMuted, #888);
 }
 
 .sm-theme-row {
@@ -65,7 +65,7 @@
 .sm-edit-colors {
   background: none;
   border: none;
-  color: var(--aether-accent, #64b5f6);
+  color: var(--rift-accent, #64b5f6);
   cursor: pointer;
   font-size: 0.75rem;
   padding: 0;
@@ -90,26 +90,26 @@
   width: 14px;
   height: 14px;
   border-radius: 3px;
-  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
   flex-shrink: 0;
 }
 
 .sm-hex-input {
   width: 72px;
-  background: var(--aether-cardBg, #1e1e34);
-  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  background: var(--rift-cardBg, #1e1e34);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
   border-radius: 4px;
-  color: var(--aether-textBright, #ccc);
+  color: var(--rift-textBright, #ccc);
   font-size: 0.6875rem;
   font-family: monospace;
   padding: 2px 4px;
   outline: none;
 }
-.sm-hex-input:focus { border-color: var(--aether-accent, #64b5f6); }
+.sm-hex-input:focus { border-color: var(--rift-accent, #64b5f6); }
 
 .sm-color-label {
   font-size: 0.625rem;
-  color: var(--aether-textMuted, #666);
+  color: var(--rift-textMuted, #666);
   width: 28px;
   text-align: right;
 }
@@ -117,9 +117,9 @@
 /* Reset button */
 .sm-reset-btn {
   background: none;
-  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
   border-radius: 5px;
-  color: var(--aether-textMuted, #888);
+  color: var(--rift-textMuted, #888);
   cursor: pointer;
   font-size: 0.6875rem;
   padding: 4px 10px;
@@ -127,7 +127,7 @@
 }
 .sm-reset-btn:hover {
   border-color: #5a5a7e;
-  color: var(--aether-textBright, #ccc);
+  color: var(--rift-textBright, #ccc);
 }
 
 /* Keep existing ts-* styles for select/slider */
@@ -142,15 +142,15 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--aether-textMuted, #888);
+  color: var(--rift-textMuted, #888);
   white-space: nowrap;
 }
 
 .ts-select {
-  background: var(--aether-cardBg, #1e1e34);
-  border: 1px solid var(--aether-chromeBorder, #3a3a4e);
+  background: var(--rift-cardBg, #1e1e34);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
   border-radius: 5px;
-  color: var(--aether-textBright, #ccc);
+  color: var(--rift-textBright, #ccc);
   font-size: 0.75rem;
   padding: 3px 6px;
   cursor: pointer;
@@ -171,7 +171,7 @@
 }
 
 .ts-size-control input[type='range'] {
-  accent-color: var(--aether-accent, #64b5f6);
+  accent-color: var(--rift-accent, #64b5f6);
   height: 4px;
   width: 80px;
   cursor: pointer;
@@ -179,7 +179,7 @@
 
 .ts-size-value {
   font-size: 0.75rem;
-  color: var(--aether-textMuted, #aaa);
+  color: var(--rift-textMuted, #aaa);
   min-width: 28px;
   text-align: right;
   font-variant-numeric: tabular-nums;
