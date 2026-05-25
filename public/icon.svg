@@ -1,56 +1,382 @@
-<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="aetherGradient" x1="40" y1="40" x2="216" y2="216" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#7DD3FC"/>
-      <stop offset="100%" stop-color="#8B5CF6"/>
+    <!-- ── Background ── -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#0F0F1A"/>
+      <stop offset="50%" stop-color="#0A0A12"/>
+      <stop offset="100%" stop-color="#050508"/>
+    </radialGradient>
+
+    <!-- Subtle blueprint grid -->
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#151525" stroke-width="0.5" opacity="0.4"/>
+    </pattern>
+    <pattern id="gridFine" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#111122" stroke-width="0.25" opacity="0.3"/>
+    </pattern>
+
+    <!-- ── Ring gradients ── -->
+    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2A2A3E"/>
+      <stop offset="15%" stop-color="#1A1A2E"/>
+      <stop offset="35%" stop-color="#3E3E52"/>
+      <stop offset="55%" stop-color="#16162A"/>
+      <stop offset="75%" stop-color="#323246"/>
+      <stop offset="100%" stop-color="#1E1E32"/>
     </linearGradient>
 
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+    <linearGradient id="metalInner" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#222238"/>
+      <stop offset="50%" stop-color="#121226"/>
+      <stop offset="100%" stop-color="#2A2A40"/>
+    </linearGradient>
+
+    <linearGradient id="rimHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4A4A62"/>
+      <stop offset="50%" stop-color="#1A1A30"/>
+      <stop offset="100%" stop-color="#3A3A52"/>
+    </linearGradient>
+
+    <!-- ── Breach glow ── -->
+    <filter id="coreGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur1"/>
+      <feGaussianBlur stdDeviation="5" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="edgeGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+
+    <filter id="pulseGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- ── Amber LED glow ── -->
+    <filter id="amberGlow" x="-200%" y="-200%" width="500%" height="500%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- ── The Rift mask ── -->
+    <mask id="riftMask">
+      <!-- White = ring visible -->
+      <rect width="512" height="512" fill="white"/>
+      <!-- Black = cut out the > channel -->
+      <!-- The > shape, rotated slightly diagonal -->
+      <g transform="rotate(-15 256 256)">
+        <path d="M 135 105 L 315 256 L 135 407" fill="none" stroke="black" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Slightly widen the cut at the entry points for a beveled look -->
+        <circle cx="135" cy="105" r="23" fill="black"/>
+        <circle cx="135" cy="407" r="23" fill="black"/>
+        <circle cx="315" cy="256" r="23" fill="black"/>
+      </g>
+    </mask>
+
+    <!-- Bevel highlight paths -->
+    <linearGradient id="bevelLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5A5A78"/>
+      <stop offset="100%" stop-color="#2A2A48"/>
+    </linearGradient>
+    <linearGradient id="bevelDark" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#0A0A15"/>
+      <stop offset="100%" stop-color="#1E1E35"/>
+    </linearGradient>
+
+    <!-- ── Circuit trace gradient ── -->
+    <linearGradient id="traceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0088AA"/>
+      <stop offset="50%" stop-color="#00DDFF"/>
+      <stop offset="100%" stop-color="#006688"/>
+    </linearGradient>
   </defs>
 
-  <!-- Background -->
-  <rect width="256" height="256" rx="52" fill="#0B1020"/>
+  <!-- ════════════════════════════════════════════ -->
+  <!-- BACKGROUND                                   -->
+  <!-- ════════════════════════════════════════════ -->
+  <rect width="512" height="512" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" fill="url(#grid)"/>
+  <rect width="512" height="512" fill="url(#gridFine)"/>
 
-  <!-- Outer orbital -->
-  <path
-    d="M52 132C52 82 88 48 128 48C170 48 204 78 204 124C204 176 168 208 126 208C90 208 60 184 54 146"
-    stroke="url(#aetherGradient)"
-    stroke-width="14"
-    stroke-linecap="round"
-    filter="url(#glow)"
-  />
+  <!-- Outer glow ambient -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#00DDFF" stroke-width="1" opacity="0.04" filter="url(#coreGlow)"/>
 
-  <!-- Inner flowing arc -->
-  <path
-    d="M92 162L128 86L164 162"
-    stroke="url(#aetherGradient)"
-    stroke-width="14"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    filter="url(#glow)"
-  />
+  <!-- ════════════════════════════════════════════ -->
+  <!-- THE RING (masked by > cutout)                -->
+  <!-- ════════════════════════════════════════════ -->
 
-  <!-- Cross-flow -->
-  <path
-    d="M108 132H148"
-    stroke="url(#aetherGradient)"
-    stroke-width="12"
-    stroke-linecap="round"
-    filter="url(#glow)"
-  />
+  <!-- Ring shadow/base -->
+  <circle cx="256" cy="256" r="195" fill="none" stroke="#08081A" stroke-width="76" mask="url(#riftMask)" opacity="0.6" transform="translate(2, 3)"/>
 
-  <!-- Ambient signal dot -->
-  <circle
-    cx="188"
-    cy="82"
-    r="7"
-    fill="#7DD3FC"
-    filter="url(#glow)"
-  />
+  <!-- Outer dark ring -->
+  <circle cx="256" cy="256" r="195" fill="none" stroke="#0E0E1E" stroke-width="76" mask="url(#riftMask)"/>
+
+  <!-- Main segmented ring body -->
+  <!-- stroke-dasharray creates the panel segments -->
+  <circle cx="256" cy="256" r="195" fill="none" stroke="url(#metalGrad)" stroke-width="66" stroke-dasharray="62 4" stroke-dashoffset="0" mask="url(#riftMask)" opacity="0.95"/>
+
+  <!-- Brighter layer for metallic sheen -->
+  <circle cx="256" cy="256" r="195" fill="none" stroke="url(#metalInner)" stroke-width="66" stroke-dasharray="62 4" stroke-dashoffset="4" mask="url(#riftMask)" opacity="0.4"/>
+
+  <!-- Inner ring lining -->
+  <circle cx="256" cy="256" r="163" fill="none" stroke="#1E1E34" stroke-width="2" mask="url(#riftMask)"/>
+  <circle cx="256" cy="256" r="164" fill="none" stroke="#2E2E48" stroke-width="0.5" mask="url(#riftMask)" opacity="0.5"/>
+
+  <!-- Outer ring lining -->
+  <circle cx="256" cy="256" r="227" fill="none" stroke="#1A1A2E" stroke-width="1.5" mask="url(#riftMask)"/>
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#2E2E48" stroke-width="0.5" mask="url(#riftMask)" opacity="0.4"/>
+
+  <!-- Mid-ring accent line -->
+  <circle cx="256" cy="256" r="195" fill="none" stroke="#3A3A54" stroke-width="0.5" mask="url(#riftMask)" opacity="0.6"/>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- VENT SLOTS around the ring                   -->
+  <!-- ════════════════════════════════════════════ -->
+
+  <!-- Generate 12 vent slots at 30-degree intervals -->
+  <g mask="url(#riftMask)">
+    <g stroke="#0E0E1A" stroke-width="3" stroke-linecap="round">
+      <!-- Top -->
+      <line x1="256" y1="56" x2="256" y2="66"/>
+      <!-- Top-right -->
+      <line x1="425" y1="87" x2="420" y2="97"/>
+      <!-- Right-top -->
+      <line x1="448" y1="240" x2="440" y2="242"/>
+      <!-- Right-bottom -->
+      <line x1="448" y1="272" x2="440" y2="270"/>
+      <!-- Bottom-right -->
+      <line x1="425" y1="425" x2="420" y2="415"/>
+      <!-- Bottom -->
+      <line x1="256" y1="456" x2="256" y2="446"/>
+      <!-- Bottom-left -->
+      <line x1="87" y1="425" x2="92" y2="415"/>
+      <!-- Left-bottom -->
+      <line x1="64" y1="272" x2="72" y2="270"/>
+      <!-- Left-top -->
+      <line x1="64" y1="240" x2="72" y2="242"/>
+      <!-- Top-left -->
+      <line x1="87" y1="87" x2="92" y2="97"/>
+    </g>
+    <!-- Double vents: pairs of parallel lines -->
+    <g stroke="#141428" stroke-width="2" stroke-linecap="round">
+      <!-- Top pair -->
+      <line x1="246" y1="56" x2="246" y2="65"/>
+      <line x1="266" y1="56" x2="266" y2="65"/>
+      <!-- Bottom pair -->
+      <line x1="246" y1="456" x2="246" y2="447"/>
+      <line x1="266" y1="456" x2="266" y2="447"/>
+      <!-- Left pair -->
+      <line x1="56" y1="246" x2="65" y2="246"/>
+      <line x1="56" y1="266" x2="65" y2="266"/>
+      <!-- Right pair -->
+      <line x1="456" y1="246" x2="447" y2="246"/>
+      <line x1="456" y1="266" x2="447" y2="266"/>
+    </g>
+  </g>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- BOLTS on the ring                            -->
+  <!-- ════════════════════════════════════════════ -->
+
+  <!-- 8 bolts at 45-degree intervals, on the ring centerline -->
+  <g mask="url(#riftMask)">
+    <!-- Top -->
+    <circle cx="256" cy="55" r="3.5" fill="#2A2A3E" stroke="#3A3A52" stroke-width="0.5"/>
+    <circle cx="256" cy="55" r="1" fill="#0E0E1A"/>
+    <!-- Top-right -->
+    <circle cx="375" cy="82" r="3.5" fill="#2A2A3E" stroke="#3A3A52" stroke-width="0.5"/>
+    <circle cx="375" cy="82" r="1" fill="#0E0E1A"/>
+    <!-- Right -->
+    <circle cx="448" cy="256" r="3.5" fill="#2A2A3E" stroke="#3A3A52" stroke-width="0.5"/>
+    <circle cx="448" cy="256" r="1" fill="#0E0E1A"/>
+    <!-- Bottom-right -->
+    <circle cx="375" cy="430" r="3.5" fill="#2A2A3E" stroke="#3A3A52" stroke-width="0.5"/>
+    <circle cx="375" cy="430" r="1" fill="#0E0E1A"/>
+    <!-- Bottom -->
+    <circle cx="256" cy="457" r="3.5" fill="#2A2A3E" stroke="#3A3A52" stroke-width="0.5"/>
+    <circle cx="256" cy="457" r="1" fill="#0E0E1A"/>
+    <!-- Bottom-left -->
+    <circle cx="137" cy="430" r="3.5" fill="#2A2A3E" stroke="#3A3A52" stroke-width="0.5"/>
+    <circle cx="137" cy="430" r="1" fill="#0E0E1A"/>
+    <!-- Left -->
+    <circle cx="64" cy="256" r="3.5" fill="#2A2A3E" stroke="#3A3A52" stroke-width="0.5"/>
+    <circle cx="64" cy="256" r="1" fill="#0E0E1A"/>
+    <!-- Top-left -->
+    <circle cx="137" cy="82" r="3.5" fill="#2A2A3E" stroke="#3A3A52" stroke-width="0.5"/>
+    <circle cx="137" cy="82" r="1" fill="#0E0E1A"/>
+  </g>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- AMBER INDICATOR LIGHTS                       -->
+  <!-- ════════════════════════════════════════════ -->
+
+  <g mask="url(#riftMask)">
+    <!-- Top indicator -->
+    <circle cx="256" cy="36" r="4" fill="#FF6B00" opacity="0.9" filter="url(#amberGlow)"/>
+    <circle cx="256" cy="36" r="2" fill="#FFAA33" opacity="0.9"/>
+    <!-- Right indicator -->
+    <circle cx="478" cy="256" r="4" fill="#FF6B00" opacity="0.9" filter="url(#amberGlow)"/>
+    <circle cx="478" cy="256" r="2" fill="#FFAA33" opacity="0.9"/>
+    <!-- Bottom indicator (slightly dimmer - worn) -->
+    <circle cx="256" cy="476" r="4" fill="#CC5500" opacity="0.5" filter="url(#amberGlow)"/>
+    <circle cx="256" cy="476" r="2" fill="#DD8833" opacity="0.5"/>
+    <!-- Left indicator -->
+    <circle cx="34" cy="256" r="4" fill="#FF6B00" opacity="0.9" filter="url(#amberGlow)"/>
+    <circle cx="34" cy="256" r="2" fill="#FFAA33" opacity="0.9"/>
+
+    <!-- Status label marks next to indicators (tiny lines as labels) -->
+    <line x1="242" y1="36" x2="248" y2="36" stroke="#555" stroke-width="1" opacity="0.4"/>
+    <line x1="264" y1="36" x2="270" y2="36" stroke="#555" stroke-width="1" opacity="0.4"/>
+    <line x1="478" y1="242" x2="478" y2="248" stroke="#555" stroke-width="1" opacity="0.4"/>
+    <line x1="478" y1="264" x2="478" y2="270" stroke="#555" stroke-width="1" opacity="0.4"/>
+    <line x1="28" y1="242" x2="28" y2="248" stroke="#555" stroke-width="1" opacity="0.4"/>
+    <line x1="28" y1="264" x2="28" y2="270" stroke="#555" stroke-width="1" opacity="0.4"/>
+  </g>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- THE > BREACH (glowing core behind ring)      -->
+  <!-- ════════════════════════════════════════════ -->
+
+  <!-- The rotated > group -->
+  <g transform="rotate(-15 256 256)">
+    <!-- Outer diffuse glow -->
+    <path d="M 135 105 L 315 256 L 135 407" fill="none" stroke="#00DDFF" stroke-width="50" stroke-linecap="round" stroke-linejoin="round" opacity="0.08" filter="url(#coreGlow)"/>
+
+    <!-- Medium glow -->
+    <path d="M 135 105 L 315 256 L 135 407" fill="none" stroke="#00DDFF" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" opacity="0.15" filter="url(#coreGlow)"/>
+
+    <!-- Core cyan fill -->
+    <path d="M 135 105 L 315 256 L 135 407" fill="none" stroke="#00E5FF" stroke-width="38" stroke-linecap="round" stroke-linejoin="round" opacity="0.5" filter="url(#coreGlow)"/>
+
+    <!-- Inner bright edge (phosphor white-cyan) -->
+    <path d="M 135 105 L 315 256 L 135 407" fill="none" stroke="#A0FFFF" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" filter="url(#edgeGlow)"/>
+
+    <!-- Core hot center -->
+    <path d="M 135 105 L 315 256 L 135 407" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" filter="url(#edgeGlow)"/>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- BEVELED EDGES of the breach                  -->
+    <!-- ════════════════════════════════════════════ -->
+
+    <!-- Outer edge cut line (top side) -->
+    <path d="M 125 95 L 321 256 L 125 417" fill="none" stroke="url(#bevelLight)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+    <!-- Outer edge cut line (bottom side - darker) -->
+    <path d="M 145 115 L 309 256 L 145 397" fill="none" stroke="url(#bevelDark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+
+    <!-- Bevel highlight on the outer rim of the cut -->
+    <path d="M 125 95 L 321 256" fill="none" stroke="#6A6A88" stroke-width="1.5" opacity="0.3"/>
+    <path d="M 125 417 L 321 256" fill="none" stroke="#4A4A5E" stroke-width="1" opacity="0.2"/>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- CIRCUIT TRACES inside the breach             -->
+    <!-- ════════════════════════════════════════════ -->
+
+    <!-- PCB-style signal traces inside the > channel -->
+    <g fill="none" stroke="url(#traceGrad)" stroke-width="1.5" opacity="0.4">
+      <!-- Trace 1: from apex going up-left -->
+      <path d="M 290 250 L 250 210 L 210 210 L 190 190"/>
+      <!-- Trace 2: from apex going down-left -->
+      <path d="M 290 262 L 250 302 L 210 302 L 190 322"/>
+      <!-- Trace 3: mid-arm trace -->
+      <path d="M 230 185 L 200 175 L 185 160"/>
+      <path d="M 230 327 L 200 337 L 185 352"/>
+      <!-- Trace 4: branch lines -->
+      <path d="M 250 210 L 250 190"/>
+      <path d="M 250 302 L 250 322"/>
+    </g>
+
+    <!-- Brighter secondary traces -->
+    <g fill="none" stroke="#00DDFF" stroke-width="0.8" opacity="0.3">
+      <path d="M 270 238 L 240 220 L 220 230 L 200 220"/>
+      <path d="M 270 274 L 240 292 L 220 282 L 200 292"/>
+    </g>
+
+    <!-- Circuit nodes (terminals) -->
+    <g fill="#00DDFF" opacity="0.5">
+      <circle cx="190" cy="190" r="2"/>
+      <circle cx="190" cy="322" r="2"/>
+      <circle cx="185" cy="160" r="1.5"/>
+      <circle cx="185" cy="352" r="1.5"/>
+      <circle cx="250" cy="190" r="1.5"/>
+      <circle cx="250" cy="322" r="1.5"/>
+      <circle cx="200" cy="220" r="1.5"/>
+      <circle cx="200" cy="292" r="1.5"/>
+    </g>
+
+    <!-- Data flow pulses (tiny bright dots along traces) -->
+    <g fill="#FFFFFF" opacity="0.7" filter="url(#pulseGlow)">
+      <circle cx="250" cy="210" r="1.5"/>
+      <circle cx="210" cy="210" r="1.5"/>
+      <circle cx="250" cy="302" r="1.5"/>
+      <circle cx="210" cy="302" r="1.5"/>
+    </g>
+  </g>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- ENGINEERING MARKINGS around the ring          -->
+  <!-- ════════════════════════════════════════════ -->
+
+  <g mask="url(#riftMask)">
+    <!-- Tick marks at 15-degree intervals -->
+    <g stroke="#3A3A52" stroke-width="0.5" opacity="0.3">
+      <!-- Diagonal tick marks -->
+      <line x1="173" y1="64" x2="176" y2="72"/>
+      <line x1="339" y1="64" x2="336" y2="72"/>
+      <line x1="448" y1="173" x2="440" y2="176"/>
+      <line x1="448" y1="339" x2="440" y2="336"/>
+      <line x1="339" y1="448" x2="336" y2="440"/>
+      <line x1="173" y1="448" x2="176" y2="440"/>
+      <line x1="64" y1="339" x2="72" y2="336"/>
+      <line x1="64" y1="173" x2="72" y2="176"/>
+    </g>
+  </g>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- SUBTLE CORNER DETAILS / FRAME                -->
+  <!-- ════════════════════════════════════════════ -->
+
+  <!-- Corner brackets -->
+  <g stroke="#1E1E34" stroke-width="1.5" fill="none" opacity="0.4">
+    <!-- Top-left -->
+    <path d="M 20 30 L 20 20 L 30 20"/>
+    <path d="M 12 36 L 12 12 L 36 12"/>
+    <!-- Top-right -->
+    <path d="M 492 30 L 492 20 L 482 20"/>
+    <path d="M 500 36 L 500 12 L 476 12"/>
+    <!-- Bottom-left -->
+    <path d="M 20 482 L 20 492 L 30 492"/>
+    <path d="M 12 476 L 12 500 L 36 500"/>
+    <!-- Bottom-right -->
+    <path d="M 492 482 L 492 492 L 482 492"/>
+    <path d="M 500 476 L 500 500 L 476 500"/>
+  </g>
+
+  <!-- ── Ambient light from the breach ── -->
+  <g transform="rotate(-15 256 256)">
+    <!-- Light cast on surrounding ring surface -->
+    <ellipse cx="240" cy="256" rx="100" ry="30" fill="#00DDFF" opacity="0.03" filter="url(#coreGlow)" transform="rotate(-45 240 256)"/>
+  </g>
+
+  <!-- ── Scan line effect (very subtle) ── -->
+  <pattern id="scanlines" width="2" height="2" patternUnits="userSpaceOnUse">
+    <rect width="2" height="1" fill="#000" opacity="0.03"/>
+  </pattern>
+  <rect width="512" height="512" fill="url(#scanlines)" pointer-events="none"/>
 </svg>
