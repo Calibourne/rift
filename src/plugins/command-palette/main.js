@@ -171,13 +171,7 @@ export function activate(rift) {
     rift.commands.execute(id)
   }
 
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-      e.preventDefault()
-      e.stopPropagation()
-      open()
-    }
-  }, true)
+  rift.keybindings.register('ctrl+p', () => open())
 }
 
 export function deactivate() {

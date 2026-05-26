@@ -23,6 +23,7 @@ import { settings } from './settings.js'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { pluginLoader } from './plugin-loader.js'
+import { keybindings } from './keybindings.js'
 
 /**
  * Create the full RiftAPI object.
@@ -76,6 +77,11 @@ export function createAPI() {
       getAll:  () => settings.getAll(),
       set:     (key, value) => settings.set(key, value),
       onChange: (fn) => settings.onChange(fn),
+    },
+
+    keybindings: {
+      register:   (combo, handler) => keybindings.register(combo, handler),
+      unregister: (combo) => keybindings.unregister(combo),
     },
 
     api: {

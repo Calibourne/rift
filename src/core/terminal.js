@@ -25,6 +25,7 @@ import { FitAddon } from '@xterm/addon-fit'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { events } from './event-bus.js'
+import { keybindings } from './keybindings.js'
 
 function createTerminal() {
   /** @type {Terminal | null} */
@@ -89,11 +90,9 @@ function createTerminal() {
       },
       allowTransparency: false,
       cols: 80, rows: 24,
-      // Let Ctrl+P bubble up to command palette instead of sending to PTY
+      // Let registered keybindings through instead of sending to PTY
       attachCustomKeyEventHandler: (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-          return false
-        }
+        if (keybindings.isRegistered(e)) return false
         return true
       },
       ...options,
