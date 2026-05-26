@@ -21,9 +21,6 @@ jobs:
           - os: windows-latest
             format: nsis
             suffix: exe
-          - os: macos-latest
-            format: dmg
-            suffix: dmg
 
     runs-on: ${{ matrix.os }}
 
