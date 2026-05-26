@@ -185,11 +185,120 @@ function createUI() {
     return [...themes.keys()]
   }
 
+  // ── Toast notifications ──
+
+  /** @type {HTMLElement | null} */
+  let toastContainer = null
+
+  function ensureToastContainer() {
+    if (toastContainer) return
+    toastContainer = document.createElement('div')
+    toastContainer.className = 'rift-toast-container'
+    document.body.appendChild(toastContainer)
+  }
+
+  /**
+   * Show a transient notification.
+   * @param {string} message
+   * @param {object} [options]
+   * @param {'info'|'success'|'warning'|'error'} [options.type='info']
+   * @param {number} [options.duration=3000] - ms, 0 = sticky (manual dismiss)
+   * @returns {Function} dismiss function
+   */
+  function notify(message, options = {}) {
+    const { type = 'info', duration = 3000 } = options
+    ensureToastContainer()
+
+    const toast = document.createElement('div')
+    toast.className = `rift-toast rift-toast-${type}`
+    toast.textContent = message
+
+    const close = document.createElement('button')
+    close.className = 'rift-toast-close'
+    close.textContent = '\u00d7'
+    close.addEventListener('click', () => dismiss())
+    toast.appendChild(close)
+
+    toastContainer.appendChild(toast)
+
+    // Trigger enter animation
+    requestAnimationFrame(() => toast.classList.add('rift-toast-enter'))
+
+    function dismiss() {
+      toast.classList.remove('rift-toast-enter')
+      toast.classList.add('rift-toast-exit')
+      setTimeout(() => toast.remove(), 200)
+    }
+
+    if (duration > 0) {
+      setTimeout(dismiss, duration)
+    }
+
+    return dismiss
+  }
+
+  // Inject notification styles once
+  injectCSS(
+`.rift-toast-container {
+  position: fixed;
+  bottom: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.rift-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--rift-foreground, #d0d0d0);
+  background: var(--rift-surface, #1a1a2e);
+  border: 1px solid var(--rift-border, #334);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  pointer-events: auto;
+  transition: opacity 0.2s, transform 0.2s;
+  opacity: 0;
+  transform: translateY(8px);
+}
+.rift-toast.rift-toast-enter {
+  opacity: 1;
+  transform: translateY(0);
+}
+.rift-toast.rift-toast-exit {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.rift-toast-success { border-left: 3px solid var(--rift-green, #81c784); }
+.rift-toast-warning { border-left: 3px solid var(--rift-yellow, #ffd54f); }
+.rift-toast-error   { border-left: 3px solid var(--rift-red, #e57373); }
+.rift-toast-info    { border-left: 3px solid var(--rift-blue, #64b5f6); }
+.rift-toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--rift-dim, #777);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+}
+.rift-toast-close:hover { color: var(--rift-foreground, #d0d0d0); }
+`,
+    'rift-toast-styles'
+  )
+
   return {
     addButton, removeButton, getButtons,
     addPanel, removePanel, togglePanel, showPanel, hidePanel, getPanel, getPanels,
     registerTheme, applyTheme, getTheme, listThemes,
-    injectCSS,
+    injectCSS, notify,
   }
 }
 

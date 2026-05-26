@@ -70,6 +70,7 @@ export function createAPI() {
       getTheme:      (name) => ui.getTheme(name),
       listThemes:    () => ui.listThemes(),
       injectCSS:     (css, id) => ui.injectCSS(css, id),
+      notify:        (msg, opts) => ui.notify(msg, opts),
     },
 
     settings: {
