@@ -171,7 +171,13 @@ export function activate(rift) {
     rift.commands.execute(id)
   }
 
-  rift.keybindings.register('ctrl+p', () => open())
+  rift.commands.register('builtin:toggle-command-palette', {
+    label: 'Toggle Command Palette',
+    category: 'Built-in',
+    handler: () => open(),
+  })
+
+  rift.keybindings.register('ctrl+p', 'builtin:toggle-command-palette')
 }
 
 export function deactivate() {

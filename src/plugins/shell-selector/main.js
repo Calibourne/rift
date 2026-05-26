@@ -161,13 +161,7 @@ export function activate(rift) {
     handler: () => openSwitcher(),
   })
 
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 't') {
-      e.preventDefault()
-      e.stopPropagation()
-      openSwitcher()
-    }
-  }, true)
+  rift.keybindings.register('ctrl+t', 'builtin:switch-shell')
 }
 
 export function deactivate() {
