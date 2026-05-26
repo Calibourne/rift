@@ -83,12 +83,14 @@ jobs:
 
       - name: Create draft release
         run: |
+          # Collect only files (not AppDir directories)
+          FILES=$(find bundles -type f | tr '\n' ' ')
           gh release create "${{ github.ref_name }}" \
             --title "Rift ${{ github.ref_name }}" \
             --draft \
             --notes "" \
-            bundles/*/* 2>/dev/null || \
+            $FILES 2>/dev/null || \
           gh release upload "${{ github.ref_name }}" \
-            bundles/*/* --clobber
+            $FILES --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
