@@ -70,26 +70,37 @@
   background: var(--rift-background, #0e0e1a);
 }
 
-/* Side panel containers */
-.terminal-area {
+/* Terminal layout — side panels sit alongside, not inside */
+.terminal-body {
   flex: 1;
   display: flex;
   overflow: hidden;
+}
+
+.terminal-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .side-panel {
   display: flex;
   flex-direction: column;
   background: var(--rift-chromeBg, #14142a);
-  border-left: 1px solid var(--rift-chromeBorder, #2a2a3e);
-  min-width: 260px;
-  max-width: 50%;
+  min-width: 280px;
+  max-width: 40%;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .side-panel-left {
-  border-left: none;
   border-right: 1px solid var(--rift-chromeBorder, #2a2a3e);
+}
+
+.side-panel-right {
+  border-left: 1px solid var(--rift-chromeBorder, #2a2a3e);
 }
 
 .side-panel-content {
@@ -103,16 +114,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--rift-chromeBorder, #2a2a3e);
   flex-shrink: 0;
 }
 
 .panel-title {
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: var(--rift-textMuted, #888);
 }
 
@@ -121,12 +132,15 @@
   border: none;
   color: var(--rift-textMuted, #666);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.125rem;
   line-height: 1;
-  padding: 0 2px;
+  padding: 0 4px;
+  border-radius: 4px;
+  transition: color 0.1s, background 0.1s;
 }
 .panel-close:hover {
   color: var(--rift-textBright, #ccc);
+  background: rgba(255,255,255,0.05);
 }
 
 .plugin-btn.active {

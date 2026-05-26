@@ -49,17 +49,20 @@ export function activate(rift) {
     toolbarEl.appendChild(tabEl)
     toolbarEl.appendChild(rightEl)
 
-    // ── Terminal area (with side panels) ──
-    const termArea = h('div', { className: 'terminal-area' })
+    // ── Terminal area with chrome panels alongside ──
+    const body = h('div', { className: 'terminal-body' })
     leftPanelContainer = h('div', { className: 'side-panel side-panel-left', style: { display: 'none' } })
+    const termArea = h('div', { className: 'terminal-area' })
     terminalContainer = h('div', { className: 'terminal-container' })
     rightPanelContainer = h('div', { className: 'side-panel side-panel-right', style: { display: 'none' } })
-    termArea.appendChild(leftPanelContainer)
+
     termArea.appendChild(terminalContainer)
-    termArea.appendChild(rightPanelContainer)
+    body.appendChild(leftPanelContainer)
+    body.appendChild(termArea)
+    body.appendChild(rightPanelContainer)
 
     root.appendChild(toolbarEl)
-    root.appendChild(termArea)
+    root.appendChild(body)
 
     window.__rift_toolbar = { toolbarEl, tabEl, rightEl, container: terminalContainer }
 
