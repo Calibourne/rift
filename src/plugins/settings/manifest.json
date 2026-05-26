@@ -5,7 +5,7 @@
   "main": "main.js",
   "contributes": {
     "commands": [
-      { "id": "builtin:open-settings", "label": "Open Settings" },
+      { "id": "builtin:quick-settings", "label": "Quick Settings" },
       { "id": "builtin:toggle-settings-panel", "label": "Toggle Settings Panel" }
     ]
   }

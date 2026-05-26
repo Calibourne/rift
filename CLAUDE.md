@@ -47,6 +47,19 @@ Grep results can flood context. Use `ctx_execute(language: "shell", code: "grep 
 
 When spawning subagents (Agent/Task tool), the routing block is automatically injected into their prompt. Bash-type subagents are upgraded to general-purpose so they have access to MCP tools. You do NOT need to manually instruct subagents about context-mode.
 
+## Project decisions — Rift terminal
+
+### Keybindings
+- `Ctrl+,` — Quick Settings modal (font/theme)
+- `Ctrl+K` — Toggle Settings side panel (General + Keys tabs)
+
+### Side panel positioning
+- Plugin picks default side (left/right) when registering a panel
+- User can override per-panel in `settings.json`: `panels: { <id>: { side: "left"|"right" } }`
+- Toolbar checks settings first, falls back to plugin default
+- Panel header has a "Move to Left/Right" action (no drag-drop, no stacking)
+- This applies to any future side panel plugins (file explorer, settings, etc.)
+
 ## Output constraints
 
 - Keep responses under 500 words.

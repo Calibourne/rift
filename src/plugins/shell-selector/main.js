@@ -36,7 +36,7 @@ export function activate(rift) {
       h('h1', {}, txt('Rift')),
       h('button', {
         className: 'settings-gear',
-        onClick: () => rift.commands.execute('builtin:open-settings'),
+        onClick: () => rift.commands.execute('builtin:quick-settings'),
       }, txt('\u2699'))
     )
 

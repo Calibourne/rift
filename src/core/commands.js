@@ -11,7 +11,7 @@
  *     category: 'My Plugin',
  *     handler: () => rift.terminal.write('hi!\n')
  *   })
- *   commands.execute('builtin:open-settings')
+ *   commands.execute('builtin:quick-settings')
  *   commands.list()  // [{ id, label, category }]
  */
 

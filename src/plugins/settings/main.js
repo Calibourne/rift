@@ -608,20 +608,23 @@ export function activate(rift) {
 
   // ── Commands ──
 
-  rift.commands.register('builtin:open-settings', {
-    label: 'Open Settings',
+  rift.commands.register('builtin:quick-settings', {
+    label: 'Quick Settings',
     category: 'Built-in',
     handler: () => openModal(),
   })
 
-  rift.commands.register('builtin:open-settings-panel', {
-    label: 'Open Settings Panel',
+  rift.commands.register('builtin:toggle-settings-panel', {
+    label: 'Toggle Settings Panel',
     category: 'Built-in',
     handler: () => rift.ui.togglePanel('settings'),
   })
 
   // Ctrl+, opens quick modal
   rift.keybindings.register('ctrl+,', () => openModal())
+
+  // Ctrl+K opens settings side panel
+  rift.keybindings.register('ctrl+k', () => rift.ui.togglePanel('settings'))
 }
 
 export function deactivate() {

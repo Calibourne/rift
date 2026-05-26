@@ -12,7 +12,7 @@ const QUICK = new Set([
   'builtin:close-terminal',
   'builtin:new-terminal',
   'builtin:switch-shell',
-  'builtin:open-settings',
+  'builtin:quick-settings',
 ])
 
 const h = (tag, attrs, ...kids) => {
@@ -84,7 +84,7 @@ export function activate(rift) {
     let shown
     if (!q) {
       // Empty — quick actions only, in a fixed order
-      const order = ['builtin:new-terminal', 'builtin:switch-shell', 'builtin:close-terminal', 'builtin:open-settings']
+      const order = ['builtin:new-terminal', 'builtin:switch-shell', 'builtin:close-terminal', 'builtin:quick-settings']
       shown = order.map(id => commands.find(c => c.id === id)).filter(Boolean)
     } else {
       // Typing — search everything
@@ -133,7 +133,7 @@ export function activate(rift) {
   function getShown() {
     const q = (input?.value || '').toLowerCase()
     if (!q) {
-      const order = ['builtin:new-terminal', 'builtin:switch-shell', 'builtin:close-terminal', 'builtin:open-settings']
+      const order = ['builtin:new-terminal', 'builtin:switch-shell', 'builtin:close-terminal', 'builtin:quick-settings']
       return order.map(id => commands.find(c => c.id === id)).filter(Boolean)
     }
     return commands.filter(c =>
