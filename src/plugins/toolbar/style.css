@@ -69,3 +69,67 @@
 .terminal-mode #root {
   background: var(--rift-background, #0e0e1a);
 }
+
+/* Side panel containers */
+.terminal-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--rift-chromeBg, #14142a);
+  border-left: 1px solid var(--rift-chromeBorder, #2a2a3e);
+  min-width: 260px;
+  max-width: 50%;
+  overflow: hidden;
+}
+
+.side-panel-left {
+  border-left: none;
+  border-right: 1px solid var(--rift-chromeBorder, #2a2a3e);
+}
+
+.side-panel-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rift-chromeBorder, #2a2a3e);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rift-textMuted, #888);
+}
+
+.panel-close {
+  background: none;
+  border: none;
+  color: var(--rift-textMuted, #666);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+.panel-close:hover {
+  color: var(--rift-textBright, #ccc);
+}
+
+.plugin-btn.active {
+  color: var(--rift-accent, #64b5f6);
+  border-color: var(--rift-accent, #64b5f6);
+}

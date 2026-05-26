@@ -1,0 +1,121 @@
+/* keybindings panel plugin */
+
+.kb-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.kb-search-wrap {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rift-chromeBorder, #2a2a3e);
+}
+
+.kb-search {
+  width: 100%;
+  background: var(--rift-cardBg, #1e1e34);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
+  border-radius: 5px;
+  color: var(--rift-textBright, #ccc);
+  font-size: 0.75rem;
+  padding: 5px 8px;
+  outline: none;
+}
+.kb-search:focus {
+  border-color: var(--rift-accent, #64b5f6);
+}
+
+.kb-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.kb-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.kb-row:hover {
+  background: var(--rift-cardHover, #2a2a4e);
+}
+.kb-row.capturing {
+  background: var(--rift-cardHover, #2a2a4e);
+  outline: 1px solid var(--rift-accent, #64b5f6);
+  outline-offset: -1px;
+}
+
+.kb-cmd-label {
+  flex: 1;
+  font-size: 0.75rem;
+  color: var(--rift-textBright, #ddd);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kb-cmd-cat {
+  font-size: 0.625rem;
+  color: var(--rift-textMuted, #666);
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.kb-combo {
+  font-size: 0.6875rem;
+  font-family: monospace;
+  color: var(--rift-accent, #64b5f6);
+  background: rgba(100, 181, 246, 0.1);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.kb-combo.capturing {
+  color: var(--rift-yellow, #ffd54f);
+  background: rgba(255, 213, 79, 0.1);
+}
+
+.kb-combo.unbound {
+  color: var(--rift-textMuted, #555);
+  background: none;
+}
+
+.kb-unbind {
+  background: none;
+  border: none;
+  color: var(--rift-textMuted, #555);
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+  padding: 0 2px;
+  visibility: hidden;
+  flex-shrink: 0;
+}
+.kb-row:hover .kb-unbind {
+  visibility: visible;
+}
+.kb-unbind:hover {
+  color: var(--rift-red, #e57373);
+}
+
+.kb-status {
+  padding: 8px 10px;
+  font-size: 0.6875rem;
+  color: var(--rift-textMuted, #666);
+  border-top: 1px solid var(--rift-chromeBorder, #2a2a3e);
+  flex-shrink: 0;
+}
+.kb-status.conflict {
+  color: var(--rift-yellow, #ffd54f);
+}
+.kb-status.saved {
+  color: var(--rift-green, #81c784);
+}

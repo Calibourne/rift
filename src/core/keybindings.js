@@ -38,6 +38,9 @@ function createKeybindings() {
   /** @type {Map<string, Function|string>} */
   const registry = new Map()
 
+  /** @type {Map<string, string>} commandId -> combo (reverse lookup) */
+  const byCommand = new Map()
+
   let listenerAdded = false
 
   /**
@@ -51,8 +54,23 @@ function createKeybindings() {
     const key = normalize(combo)
     if (registry.has(key)) return () => {}
     registry.set(key, handler)
+    if (typeof handler === 'string') byCommand.set(handler, key)
     ensureListener()
-    return () => registry.delete(key)
+    return () => { unregister(combo) }
+  }
+
+  /**
+   * Register or overwrite a keyboard shortcut (used by settings reload).
+   * Unlike register(), this always wins — no first-wins check.
+   */
+  function set(combo, handler) {
+    const key = normalize(combo)
+    const oldHandler = registry.get(key)
+    if (typeof oldHandler === 'string') byCommand.delete(oldHandler)
+    registry.set(key, handler)
+    if (typeof handler === 'string') byCommand.set(handler, key)
+    ensureListener()
+    return () => { unregister(combo) }
   }
 
   /**
@@ -60,7 +78,10 @@ function createKeybindings() {
    * @param {string} combo
    */
   function unregister(combo) {
-    registry.delete(normalize(combo))
+    const key = normalize(combo)
+    const handler = registry.get(key)
+    if (typeof handler === 'string') byCommand.delete(handler)
+    registry.delete(key)
   }
 
   /**
@@ -74,10 +95,30 @@ function createKeybindings() {
   }
 
   /**
-   * Remove all registered keybindings (for testing/teardown).
+   * Remove all registered keybindings.
    */
   function clear() {
     registry.clear()
+    byCommand.clear()
+  }
+
+  /**
+   * Return all combo->command bindings (for the keybindings editor).
+   * @returns {Array<{combo: string, commandId: string}>}
+   */
+  function getBindings() {
+    return [...registry.entries()]
+      .filter(([, h]) => typeof h === 'string')
+      .map(([combo, commandId]) => ({ combo, commandId }))
+  }
+
+  /**
+   * Look up the combo bound to a command ID.
+   * @param {string} commandId
+   * @returns {string|undefined}
+   */
+  function getCombo(commandId) {
+    return byCommand.get(commandId)
   }
 
   /**
@@ -96,10 +137,10 @@ function createKeybindings() {
     if (!bindings || typeof bindings !== 'object') return
     for (const [combo, commandId] of Object.entries(bindings)) {
       if (commandId === null || commandId === '') {
-        // Block this combo — register no-op so plugins can't claim it
-        register(combo, () => {})
+        // Block this combo — set no-op so plugins can't claim it
+        set(combo, () => {})
       } else if (typeof commandId === 'string') {
-        register(combo, commandId)
+        set(combo, commandId)
       }
     }
   }
@@ -123,7 +164,7 @@ function createKeybindings() {
     listenerAdded = true
   }
 
-  return { register, unregister, isRegistered, clear, loadFromSettings }
+  return { register, set, unregister, isRegistered, clear, loadFromSettings, getBindings, getCombo }
 }
 
 export const keybindings = createKeybindings()

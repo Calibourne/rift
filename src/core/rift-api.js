@@ -65,6 +65,8 @@ export function createAPI() {
       togglePanel:   (id) => ui.togglePanel(id),
       showPanel:     (id) => ui.showPanel(id),
       hidePanel:     (id) => ui.hidePanel(id),
+      getPanel:      (id) => ui.getPanel(id),
+      getPanels:     (side) => ui.getPanels(side),
       registerTheme: (def) => ui.registerTheme(def),
       applyTheme:    (name) => ui.applyTheme(name),
       getTheme:      (name) => ui.getTheme(name),
@@ -83,6 +85,9 @@ export function createAPI() {
     keybindings: {
       register:   (combo, handler) => keybindings.register(combo, handler),
       unregister: (combo) => keybindings.unregister(combo),
+      set:        (combo, handler) => keybindings.set(combo, handler),
+      getBindings: () => keybindings.getBindings(),
+      getCombo:    (cmd) => keybindings.getCombo(cmd),
     },
 
     api: {
