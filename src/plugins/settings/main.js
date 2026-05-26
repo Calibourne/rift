@@ -458,14 +458,15 @@ export function activate(rift) {
   }
 
   function loadBindings() {
-    const raw = rift.settings.get('keybindings')
-    // Return a map of commandId -> combo
-    if (!raw || typeof raw !== 'object') return {}
-    const byCmd = {}
-    for (const [combo, cmdId] of Object.entries(raw)) {
-      byCmd[cmdId] = combo
+    // Read from the runtime registry — includes both defaults and
+    // user overrides from settings.  getCombo() gives the active combo
+    // for a command ID regardless of how it was registered.
+    const map = {}
+    for (const cmd of rift.commands.list()) {
+      const combo = rift.keybindings.getCombo(cmd.id)
+      if (combo) map[cmd.id] = combo
     }
-    return byCmd
+    return map
   }
 
   function startCapture(commandId, searchEl, listEl, statusEl) {
@@ -503,11 +504,11 @@ export function activate(rift) {
 
       const combo = normalizeKeyEvent(e)
       const bindings = loadBindings()
-      const existingCmd = Object.entries(bindings).find(([c, id]) => c === combo && id !== commandId)
+      const existingCmd = Object.entries(bindings).find(([cmdId, cmdCombo]) => cmdCombo === combo && cmdId !== commandId)
 
       if (existingCmd) {
-        const conflictCmd = rift.commands.list().find(c => c.id === existingCmd[1])
-        const label = conflictCmd ? conflictCmd.label : existingCmd[1]
+        const conflictCmd = rift.commands.list().find(c => c.id === existingCmd[0])
+        const label = conflictCmd ? conflictCmd.label : existingCmd[0]
         if (!confirm(`"${prettyCombo(combo)}" is already bound to "${label}". Override?`)) {
           capturing = null
           renderKeyList(searchEl, listEl, statusEl)
@@ -621,10 +622,10 @@ export function activate(rift) {
   })
 
   // Ctrl+, opens quick modal
-  rift.keybindings.register('ctrl+,', () => openModal())
+  rift.keybindings.register('ctrl+,', 'builtin:quick-settings')
 
   // Ctrl+K opens settings side panel
-  rift.keybindings.register('ctrl+k', () => rift.ui.togglePanel('settings'))
+  rift.keybindings.register('ctrl+k', 'builtin:toggle-settings-panel')
 }
 
 export function deactivate() {
