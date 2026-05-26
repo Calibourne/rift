@@ -83,8 +83,8 @@ jobs:
 
       - name: Create draft release
         run: |
-          # Collect only files (not AppDir directories)
-          FILES=$(find bundles -type f | tr '\n' ' ')
+          # Collect installer files (skip .sig, .tar.gz, AppDir)
+          FILES=$(find bundles -type f \( -name '*.deb' -o -name '*.AppImage' -o -name '*.msi' -o -name '*.exe' \) | tr '\n' ' ')
           gh release create "${{ github.ref_name }}" \
             --title "Rift ${{ github.ref_name }}" \
             --draft \
