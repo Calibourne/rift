@@ -13,17 +13,13 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            format: AppImage
-            suffix: AppImage
+            bundle: deb
           - os: ubuntu-latest
-            format: deb
-            suffix: deb
+            bundle: appimage
           - os: windows-latest
-            format: msi
-            suffix: msi
+            bundle: msi
           - os: windows-latest
-            format: nsis
-            suffix: exe
+            bundle: nsis
 
     runs-on: ${{ matrix.os }}
 
@@ -64,10 +60,30 @@ jobs:
 
       - name: Build Tauri bundle
         uses: tauri-apps/tauri-action@v0.6.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Rift ${{ github.ref_name }}'
-          releaseDraft: true
+          args: --bundles ${{ matrix.bundle }}
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-${{ matrix.os }}-${{ matrix.bundle }}
+          path: src-tauri/target/release/bundle/${{ matrix.bundle }}/**/*
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all bundles
+        uses: actions/download-artifact@v4
+        with:
+          path: bundles
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Rift ${{ github.ref_name }}
+          draft: true
           prerelease: false
+          files: bundles/**/*
