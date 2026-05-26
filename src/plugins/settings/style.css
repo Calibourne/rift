@@ -184,3 +184,236 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* ───────────────────────────────────────────
+   Settings side panel (General + Keys tabs)
+   ─────────────────────────────────────────── */
+
+.sp-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Tab bar */
+.sp-tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--rift-chromeBorder, #2a2a3e);
+  flex-shrink: 0;
+}
+
+.sp-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--rift-textMuted, #777);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 10px 8px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.sp-tab:hover {
+  color: var(--rift-textBright, #ccc);
+}
+.sp-tab-active {
+  color: var(--rift-accent, #64b5f6);
+  border-bottom-color: var(--rift-accent, #64b5f6);
+}
+
+/* Content area */
+.sp-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.sp-tab-content {
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+}
+.sp-tab-content-active {
+  display: flex;
+}
+
+/* General tab */
+.sp-section {
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-section-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rift-textMuted, #777);
+  margin-bottom: 2px;
+}
+
+.sp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-label {
+  font-size: 0.6875rem;
+  color: var(--rift-textMuted, #999);
+}
+
+.sp-select {
+  background: var(--rift-cardBg, #1e1e34);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
+  border-radius: 6px;
+  color: var(--rift-textBright, #ccc);
+  font-size: 0.75rem;
+  padding: 6px 8px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.sp-select:hover,
+.sp-select:focus {
+  border-color: var(--rift-accent, #64b5f6);
+}
+
+.sp-size-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sp-size-row input[type='range'] {
+  flex: 1;
+  accent-color: var(--rift-accent, #64b5f6);
+  height: 4px;
+  cursor: pointer;
+}
+
+.sp-size-value {
+  font-size: 0.75rem;
+  color: var(--rift-textMuted, #aaa);
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Keys tab */
+.sp-search-wrap {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--rift-chromeBorder, #2a2a3e);
+  flex-shrink: 0;
+}
+
+.sp-search {
+  width: 100%;
+  background: var(--rift-cardBg, #1e1e34);
+  border: 1px solid var(--rift-chromeBorder, #3a3a4e);
+  border-radius: 6px;
+  color: var(--rift-textBright, #ccc);
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  outline: none;
+}
+.sp-search:focus {
+  border-color: var(--rift-accent, #64b5f6);
+}
+
+.sp-key-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.sp-key-cat {
+  padding: 8px 12px 3px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rift-textMuted, #777);
+}
+
+.sp-key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.1s;
+}
+.sp-key-row:hover {
+  background: var(--rift-cardHover, #2a2a4e);
+}
+.sp-key-row.capturing {
+  background: var(--rift-cardHover, #2a2a4e);
+  outline: 1px solid var(--rift-accent, #64b5f6);
+  outline-offset: -1px;
+}
+
+.sp-key-label {
+  flex: 1;
+  font-size: 0.75rem;
+  color: var(--rift-textBright, #ddd);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sp-key-combo {
+  font-size: 0.6875rem;
+  font-family: monospace;
+  color: var(--rift-accent, #64b5f6);
+  background: rgba(100, 181, 246, 0.1);
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  min-width: 64px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.sp-key-combo.capturing {
+  color: var(--rift-yellow, #ffd54f);
+  background: rgba(255, 213, 79, 0.1);
+}
+.sp-key-combo.unbound {
+  color: var(--rift-textMuted, #555);
+  background: none;
+}
+
+.sp-key-unbind {
+  background: none;
+  border: none;
+  color: var(--rift-textMuted, #555);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  line-height: 1;
+  padding: 0 2px;
+  visibility: hidden;
+  flex-shrink: 0;
+}
+.sp-key-row:hover .sp-key-unbind {
+  visibility: visible;
+}
+.sp-key-unbind:hover {
+  color: var(--rift-red, #e57373);
+}
+
+.sp-key-status {
+  padding: 8px 12px;
+  font-size: 0.6875rem;
+  color: var(--rift-textMuted, #666);
+  border-top: 1px solid var(--rift-chromeBorder, #2a2a3e);
+  flex-shrink: 0;
+}
+.sp-key-status.saved {
+  color: var(--rift-green, #81c784);
+}
