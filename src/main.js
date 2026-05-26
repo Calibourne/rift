@@ -14,6 +14,7 @@ import { events } from "./core/event-bus.js"
 import { commands } from "./core/commands.js"
 import { pluginLoader } from "./core/plugin-loader.js"
 import { terminal } from "./core/terminal.js"
+import { keybindings } from "./core/keybindings.js"
 import { api } from "./core/rift-api.js"
 
 /* ── Boot sequence ── */
@@ -22,10 +23,13 @@ async function boot() {
   // 1. Load persisted settings from Rust backend
   await settings.load()
 
-  // 2. Emit core modules are ready
+  // 2. Load user-defined keybindings from settings (before plugins, so user wins)
+  keybindings.loadFromSettings(settings)
+
+  // 3. Emit core modules are ready
   events.emit("app:ready", {})
 
-  // 3. Register built-in commands (before plugins, so our handlers win)
+  // 4. Register built-in commands (before plugins, so our handlers win)
   commands.register('builtin:close-terminal', {
     label: 'Close Terminal',
     category: 'Built-in',
@@ -76,17 +80,17 @@ async function boot() {
     },
   })
 
-  // 4. Load built-in plugins (Vite static glob — must be in this file)
+  // 5. Load built-in plugins (Vite static glob — must be in this file)
   const modules = import.meta.glob("./plugins/*/main.js", { eager: false })
   const manifests = import.meta.glob("./plugins/*/manifest.json", { eager: true, import: "default" })
 
   // Pass glob results to the plugin loader
   await pluginLoader.loadBuiltins(modules, manifests, api)
 
-  // 5. Load user plugins (from ~/.config/rift/plugins/)
+  // 6. Load user plugins (from ~/.config/rift/plugins/)
   await pluginLoader.loadUserPlugins(api)
 
-  // 6. Register per-shell commands so they appear in Ctrl+P palette
+  // 7. Register per-shell commands so they appear in Ctrl+P palette
   //    This replaces the need for a separate shell selector modal.
   try {
     const shells = await invoke('list_shells')
@@ -113,7 +117,7 @@ async function boot() {
     console.warn('[main] failed to list shells:', e)
   }
 
-  // 7. Wire up shell selection -> terminal launch
+  // 8. Wire up shell selection -> terminal launch
   // The shell-selector plugin emits 'shell:selected'; we orchestrate
   // the actual PTY launch here so core modules don't need DOM coupling.
   events.on('shell:selected', async (shellInfo) => {
@@ -135,7 +139,7 @@ async function boot() {
     }
   })
 
-  // 7. Start the app
+  // 9. Start the app
   const defaultShell = settings.get('default_shell')
   if (defaultShell && defaultShell.path) {
     // Auto-launch — have a default, skip the selector

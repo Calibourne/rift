@@ -6,6 +6,9 @@
  * attachCustomKeyEventHandler delegates to isRegistered() so registered
  * combos are blocked from reaching the PTY automatically.
  *
+ * User-defined keybindings are loaded from settings before plugins
+ * activate, so user settings always win.
+ *
  * Usage:
  *   import { keybindings } from './core/keybindings.js'
  *   keybindings.register('ctrl+p', () => openPalette())
@@ -39,6 +42,7 @@ function createKeybindings() {
 
   /**
    * Register a keyboard shortcut.
+   * First-registered wins (user settings are loaded before plugins).
    * @param {string} combo  - e.g. 'ctrl+p', 'ctrl+shift+n'
    * @param {Function|string} handler - Callback or command ID to execute
    * @returns {Function} Unregister function
@@ -76,6 +80,30 @@ function createKeybindings() {
     registry.clear()
   }
 
+  /**
+   * Load user-defined keybindings from persisted settings.
+   * Called during boot, before plugins activate, so user settings win.
+   *
+   * Settings format:
+   *   { "ctrl+p": "builtin:show-shell-selector", "ctrl+w": null }
+   *
+   * A null value blocks that combo — no plugin can claim it.
+   *
+   * @param {object} riftSettings - settings module with get() method
+   */
+  function loadFromSettings(riftSettings) {
+    const bindings = riftSettings.get('keybindings')
+    if (!bindings || typeof bindings !== 'object') return
+    for (const [combo, commandId] of Object.entries(bindings)) {
+      if (commandId === null || commandId === '') {
+        // Block this combo — register no-op so plugins can't claim it
+        register(combo, () => {})
+      } else if (typeof commandId === 'string') {
+        register(combo, commandId)
+      }
+    }
+  }
+
   // Lazy-add one capture-phase listener on first registration.
   // This catches all keydowns before they reach xterm.js.
   function ensureListener() {
@@ -95,7 +123,7 @@ function createKeybindings() {
     listenerAdded = true
   }
 
-  return { register, unregister, isRegistered, clear }
+  return { register, unregister, isRegistered, clear, loadFromSettings }
 }
 
 export const keybindings = createKeybindings()
