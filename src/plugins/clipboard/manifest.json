@@ -1,0 +1,6 @@
+{
+  "name": "@rift/clipboard",
+  "version": "0.1.0",
+  "description": "Copy/paste terminal selection via Ctrl+Shift+C/V",
+  "main": "main.js"
+}
