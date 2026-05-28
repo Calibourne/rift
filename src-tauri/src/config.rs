@@ -96,3 +96,42 @@ pub fn read_theme_file(app: AppHandle, name: String) -> Result<String, String> {
     path.push(format!("{}.json", name));
     std::fs::read_to_string(&path).map_err(|e| e.to_string())
 }
+
+#[derive(Serialize)]
+pub struct UserPluginEntry {
+    pub name: String,
+    pub main: String,
+    pub manifest: Option<String>,
+}
+
+#[tauri::command]
+pub fn list_user_plugins(app: AppHandle) -> Vec<UserPluginEntry> {
+    let mut base = app.path().app_config_dir().unwrap_or_default();
+    base.push("plugins");
+    let mut plugins = Vec::new();
+    if let Ok(entries) = std::fs::read_dir(&base) {
+        for entry in entries.flatten() {
+            let dir = entry.path();
+            if !dir.is_dir() {
+                continue;
+            }
+            let main_path = dir.join("main.js");
+            if !main_path.exists() {
+                continue;
+            }
+            let name = entry.file_name().to_string_lossy().to_string();
+            let main = match std::fs::read_to_string(&main_path) {
+                Ok(c) => c,
+                Err(_) => continue,
+            };
+            let manifest_path = dir.join("manifest.json");
+            let manifest = if manifest_path.exists() {
+                std::fs::read_to_string(&manifest_path).ok()
+            } else {
+                None
+            };
+            plugins.push(UserPluginEntry { name, main, manifest });
+        }
+    }
+    plugins
+}

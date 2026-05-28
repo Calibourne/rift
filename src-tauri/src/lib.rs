@@ -20,6 +20,7 @@ pub fn run() {
             config::update_settings,
             config::list_themes,
             config::read_theme_file,
+    config::list_user_plugins,
         ])
         .run(tauri::generate_context!())
         .expect("error while running rift");
