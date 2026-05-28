@@ -1,6 +1,5 @@
 use serde::Serialize;
 use std::char::decode_utf16;
-use std::path::PathBuf;
 
 /// Information about a detected shell.
 #[derive(Debug, Clone, Serialize)]

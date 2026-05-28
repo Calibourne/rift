@@ -81,7 +81,7 @@ function createPluginLoader() {
     try {
       const blob = new Blob([entry.main], { type: 'application/javascript' })
       const url = URL.createObjectURL(blob)
-      const mod = await import(url)
+      const mod = await import(/* @vite-ignore */ url)
       URL.revokeObjectURL(url)
       const manifest = entry.manifest ? JSON.parse(entry.manifest) : null
       await activate(entry.name, mod, api, manifest)
@@ -109,7 +109,7 @@ function createPluginLoader() {
       if (loaded) return
       const blob = new Blob([entry.main], { type: 'application/javascript' })
       const url = URL.createObjectURL(blob)
-      mod = await import(url)
+      mod = await import(/* @vite-ignore */ url)
       URL.revokeObjectURL(url)
       const parsedManifest = entry.manifest ? JSON.parse(entry.manifest) : null
       await activate(entry.name, mod, api, parsedManifest)
