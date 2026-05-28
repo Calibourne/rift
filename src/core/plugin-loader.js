@@ -9,6 +9,7 @@
  * Errors in one plugin never crash another (try/catch per plugin).
  */
 
+import { invoke } from '@tauri-apps/api/core'
 import { events } from './event-bus.js'
 
 function createPluginLoader() {
@@ -47,10 +48,87 @@ function createPluginLoader() {
 
   /**
    * Load user plugins from ~/.config/rift/plugins/<name>/.
-   * (Phase 3 implementation.)
+   * Eager plugins import immediately. Lazy plugins register stubs
+   * from their manifest commands — first execution triggers import + activate.
    */
   async function loadUserPlugins(api) {
-    // Placeholder for Phase 3
+    let entries
+    try {
+      entries = await invoke('list_user_plugins')
+    } catch (e) {
+      console.warn('[plugin-loader] no user plugin dir or IPC unavailable:', e)
+      return
+    }
+
+    for (const entry of entries) {
+      let manifest = null
+      if (entry.manifest) {
+        try { manifest = JSON.parse(entry.manifest) } catch { /* ignore */ }
+      }
+
+      if (manifest && manifest.lazy === true) {
+        registerLazyPlugin(entry, manifest, api)
+      } else {
+        await loadPluginNow(entry, api)
+      }
+    }
+  }
+
+  /**
+   * Eager-load a user plugin: import main.js, parse manifest, activate.
+   */
+  async function loadPluginNow(entry, api) {
+    try {
+      const blob = new Blob([entry.main], { type: 'application/javascript' })
+      const url = URL.createObjectURL(blob)
+      const mod = await import(url)
+      URL.revokeObjectURL(url)
+      const manifest = entry.manifest ? JSON.parse(entry.manifest) : null
+      await activate(entry.name, mod, api, manifest)
+    } catch (e) {
+      console.error(`[plugin-loader] failed to load user plugin "${entry.name}":`, e)
+    }
+  }
+
+  /**
+   * Lazy-register a user plugin: only register command stubs from manifest.
+   * On first execution, import + activate the real plugin, then delegate.
+   */
+  function registerLazyPlugin(entry, manifest, api) {
+    const contributes = manifest.contributes
+    if (!contributes || !contributes.commands || contributes.commands.length === 0) {
+      // Nothing to trigger on — force eager load
+      loadPluginNow(entry, api)
+      return
+    }
+
+    let loaded = false
+    let mod = null
+
+    async function ensureLoaded() {
+      if (loaded) return
+      const blob = new Blob([entry.main], { type: 'application/javascript' })
+      const url = URL.createObjectURL(blob)
+      mod = await import(url)
+      URL.revokeObjectURL(url)
+      const parsedManifest = entry.manifest ? JSON.parse(entry.manifest) : null
+      await activate(entry.name, mod, api, parsedManifest)
+      loaded = true
+    }
+
+    for (const cmd of contributes.commands) {
+      const cmdId = cmd.id
+      api.commands.register(cmdId, {
+        label: cmd.label,
+        category: manifest.name || entry.name,
+        handler: async (...args) => {
+          await ensureLoaded()
+          // Re-execute after plugin is active — plugin's register() call
+          // will have overwritten our stub with the real handler
+          api.commands.execute(cmdId, ...args)
+        },
+      })
+    }
   }
 
   /**
