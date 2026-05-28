@@ -35,15 +35,18 @@ async function boot() {
     category: 'Built-in',
     handler: async () => {
       if (!terminal.isActive()) return
-      await terminal.close()
-      // Show a placeholder in the terminal area instead of going back to selector
-      const container = document.querySelector('.terminal-container')
-      if (container) {
-        container.innerHTML = ''
-        const placeholder = document.createElement('div')
-        placeholder.className = 'terminal-placeholder'
-        placeholder.textContent = 'Terminal closed — Ctrl+P to open a new one'
-        container.appendChild(placeholder)
+      const id = terminal.activeId
+      await terminal.close(id)
+      if (!terminal.isActive()) {
+        // Show a placeholder in the terminal area instead of going back to selector
+        const container = document.querySelector('.terminal-container')
+        if (container) {
+          container.innerHTML = ''
+          const placeholder = document.createElement('div')
+          placeholder.className = 'terminal-placeholder'
+          placeholder.textContent = 'Terminal closed — Ctrl+P to open a new one'
+          container.appendChild(placeholder)
+        }
       }
     },
   })
@@ -129,13 +132,14 @@ async function boot() {
       return
     }
     try {
-      await terminal.open(container, shellInfo, {
+      await terminal.createAndOpen(container, shellInfo, {
         fontSize: settings.get('font_size') || 14,
         fontFamily: settings.get('font_family')
           || "'JetBrainsMono Nerd Font','JetBrains Mono','Fira Code',monospace",
+        scrollback: settings.get('scrollback') || 5000,
       })
     } catch (e) {
-      console.error('[main] terminal.open failed:', e)
+      console.error('[main] terminal.createAndOpen failed:', e)
     }
   })
 
