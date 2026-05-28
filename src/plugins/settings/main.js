@@ -365,6 +365,21 @@ export function activate(rift) {
         h('label', { className: 'sp-label' }, txt('Theme')),
         themeSel,
       ),
+      h('div', { className: 'sp-field' },
+        h('label', { className: 'sp-label' }, txt('Scrollback')),
+        h('div', { className: 'sp-size-row' },
+          h('input', {
+            type: 'range', min: '500', max: '50000', step: '500',
+            value: String(rift.settings.get('scrollback') || 5000),
+            onInput: (e) => {
+              const v = Number(e.target.value)
+              e.target.nextElementSibling.textContent = v + ' lines'
+              rift.settings.set('scrollback', v)
+            },
+          }),
+          h('span', { className: 'sp-size-value' }, txt(String(rift.settings.get('scrollback') || 5000) + ' lines')),
+        ),
+      ),
     ))
 
     return container
