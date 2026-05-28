@@ -46,15 +46,21 @@ export function createAPI() {
     },
 
     terminal: {
-      open:   (shellPath, shellArgs) => terminal.open(shellPath, shellArgs),
-      write:  (data) => terminal.write(data),
-      resize: (cols, rows) => terminal.resize(cols, rows),
-      close:  () => terminal.close(),
+      open:   (container, shellInfo, options) => terminal.createAndOpen(container, shellInfo, options),
+      create: (shellInfo, options) => terminal.create(shellInfo, options),
+      switch: (id) => terminal.switch(id),
+      close:  (id) => terminal.close(id),
+      list:   () => terminal.list(),
       focus:  () => terminal.focus(),
-      getInfo: () => terminal.getInfo(),
+      write:  (data, id) => terminal.write(data, id),
+      resize: (cols, rows, id) => terminal.resize(cols, rows, id),
+      getInfo:  (id) => terminal.getInfo(id),
+      getSelection: () => terminal.getSelection(),
+      isActive: () => terminal.isActive(),
+      get activeId() { return terminal.activeId },
       onInput: (fn) => terminal.onInput(fn),
       onData:  (fn) => terminal.onData(fn),
-      isActive: () => terminal.isActive(),
+      onTitleChange: (fn) => terminal.onTitleChange(fn),
     },
 
     ui: {
