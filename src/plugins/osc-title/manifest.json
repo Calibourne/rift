@@ -1,0 +1,6 @@
+{
+  "name": "@rift/osc-title",
+  "version": "0.1.0",
+  "description": "Set window title from OSC escape sequences",
+  "main": "main.js"
+}
