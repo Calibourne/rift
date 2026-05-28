@@ -22,7 +22,16 @@ to get started.
 
 ## Try it
 
-Pre-built binaries are coming. For now:
+### Download a release
+
+Grab the latest binary from the [Releases page](https://github.com/Calibourne/rift/releases):
+
+| Platform | Format |
+|----------|--------|
+| Linux    | `.deb` or `.AppImage` |
+| Windows  | `.msi` or `.exe` (NSIS installer) |
+
+### Build from source
 
 ```bash
 npm install
@@ -32,10 +41,6 @@ npm run tauri dev
 Rift scans your installed shells, opens a picker, and drops you
 into a running terminal. Everything beyond that — theme, keybindings,
 command palette — you add as plugins when you need them.
-
-> **Status:** Early but usable. The core and plugin API are stable.
-> Built-in plugins ship with the app. [Releases page](https://github.com/Calibourne/rift/releases)
-> will have pre-built binaries once the first stable build is cut.
 
 ## Philosophy
 
