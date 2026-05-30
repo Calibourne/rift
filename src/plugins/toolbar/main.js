@@ -37,6 +37,9 @@ export function activate(rift) {
   function render() {
     root = document.getElementById('root')
     if (!root) return
+    // If already in terminal mode with toolbar rendered, skip re-render
+    if (root.classList.contains('terminal-mode') && root.querySelector('.terminal-toolbar')) return
+
     root.classList.remove('shell-selector-mode')
     root.classList.add('terminal-mode')
 
@@ -48,8 +51,8 @@ export function activate(rift) {
     rightEl = h('div', { className: 'toolbar-right' })
     const newTabBtn = h('button', {
       className: 'new-tab-btn',
-      title: 'New Tab (Ctrl+T)',
-      onClick: () => newTab(),
+      title: 'New Tab',
+      onClick: () => rift.commands.execute('builtin:switch-shell'),
     }, txt('+'))
     toolbarEl.appendChild(tabsEl)
     toolbarEl.appendChild(newTabBtn)
@@ -165,7 +168,7 @@ export function activate(rift) {
   function newTab() {
     const defaultShell = rift.settings.get('default_shell')
     if (!defaultShell || !defaultShell.path) {
-      rift.commands.execute('builtin:show-shell-selector')
+      rift.commands.execute('builtin:switch-shell')
       return
     }
     const container = window.__rift_toolbar?.container
@@ -227,13 +230,12 @@ export function activate(rift) {
     updateVisibility(id)
   })
 
-  // Register new-tab command + Ctrl+T binding
+  // Register new-tab command (no keybinding — Ctrl+T already goes to shell picker)
   rift.commands.register('builtin:new-tab', {
     label: 'New Tab',
     category: 'Built-in',
     handler: () => newTab(),
   })
-  rift.keybindings.register('ctrl+t', 'builtin:new-tab')
 
   window.__rift_getTerminalContainer = () => {
     return window.__rift_toolbar?.container ?? document.querySelector('.terminal-container')

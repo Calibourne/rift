@@ -148,11 +148,16 @@ export function activate(rift) {
     await rift.settings.set('default_shell', info)
 
     if (rift.terminal.isActive()) {
-      await rift.terminal.close()
+      // Sessions exist — create a new tab instead of replacing
+      const container = window.__rift_toolbar?.container
+      if (container) {
+        rift.events.emit('app:phase', 'terminal')
+        rift.events.emit('shell:selected', info)
+      }
+    } else {
+      rift.events.emit('app:phase', 'terminal')
+      rift.events.emit('shell:selected', info)
     }
-
-    rift.events.emit('app:phase', 'terminal')
-    rift.events.emit('shell:selected', info)
   }
 
   rift.commands.register('builtin:switch-shell', {
