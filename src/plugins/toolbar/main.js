@@ -2,9 +2,9 @@
  * @rift/toolbar
  *
  * Renders a toolbar above the terminal with:
- *   - Shell name / tab label
+ *   - Dynamic tab bar (one tab per session)
  *   - Plugin buttons (from ui.addButton)
- *   - Close button
+ *   - Side panel toggles
  */
 
 import './style.css'
@@ -24,7 +24,7 @@ const txt = (s) => document.createTextNode(s)
 
 export function activate(rift) {
   let toolbarEl = null
-  let tabEl = null
+  let tabsEl = null
   let rightEl = null
   let terminalContainer = null
   let root = null
@@ -44,9 +44,15 @@ export function activate(rift) {
 
     // ── Toolbar ──
     toolbarEl = h('div', { className: 'terminal-toolbar' })
-    tabEl = h('div', { className: 'tab' }, txt('Terminal'))
+    tabsEl = h('div', { className: 'tabs' })
     rightEl = h('div', { className: 'toolbar-right' })
-    toolbarEl.appendChild(tabEl)
+    const newTabBtn = h('button', {
+      className: 'new-tab-btn',
+      title: 'New Tab (Ctrl+T)',
+      onClick: () => newTab(),
+    }, txt('+'))
+    toolbarEl.appendChild(tabsEl)
+    toolbarEl.appendChild(newTabBtn)
     toolbarEl.appendChild(rightEl)
 
     // ── Terminal area with chrome panels alongside ──
@@ -64,7 +70,7 @@ export function activate(rift) {
     root.appendChild(toolbarEl)
     root.appendChild(body)
 
-    window.__rift_toolbar = { toolbarEl, tabEl, rightEl, container: terminalContainer }
+    window.__rift_toolbar = { toolbarEl, tabsEl, rightEl, container: terminalContainer }
 
     // Re-apply any registered panels
     for (const p of rift.ui.getPanels('left')) rebuildPanel(p)
@@ -126,9 +132,65 @@ export function activate(rift) {
     container.style.display = sideHasVisible ? 'flex' : 'none'
   }
 
-  rift.events.on('shell:selected', (shell) => {
-    if (tabEl) tabEl.textContent = shell.name || 'Terminal'
-  })
+  function addTab(id, label) {
+    if (!tabsEl) return
+    const closeBtn = h('button', {
+      className: 'tab-close',
+      title: 'Close',
+      onClick: (e) => { e.stopPropagation(); rift.terminal.close(id) },
+    }, txt('×'))
+    const tab = h('div', {
+      className: 'tab',
+      'data-session': id,
+      onClick: () => rift.terminal.switch(id),
+    }, h('span', { className: 'tab-label' }, txt(label)), closeBtn)
+    tabsEl.appendChild(tab)
+    setActiveTab(id)
+  }
+
+  function removeTab(id) {
+    tabsEl?.querySelector(`[data-session="${id}"]`)?.remove()
+  }
+
+  function setActiveTab(id) {
+    tabsEl?.querySelectorAll('.tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.session === id))
+  }
+
+  function updateTabLabel(id, label) {
+    const el = tabsEl?.querySelector(`[data-session="${id}"] .tab-label`)
+    if (el) el.textContent = label
+  }
+
+  function newTab() {
+    const defaultShell = rift.settings.get('default_shell')
+    if (!defaultShell || !defaultShell.path) {
+      rift.commands.execute('builtin:show-shell-selector')
+      return
+    }
+    const container = window.__rift_toolbar?.container
+    if (container) {
+      rift.terminal.open(container, defaultShell, {
+        fontSize: rift.settings.get('font_size') || 14,
+        fontFamily: rift.settings.get('font_family'),
+        scrollback: rift.settings.get('scrollback') || 5000,
+      })
+    }
+  }
+
+  // Wire sessions that already exist (e.g. from auto-start) into tabs
+  for (const id of rift.terminal.list()) {
+    const info = rift.terminal.getInfo(id)
+    addTab(id, info?.shell?.name || 'Terminal')
+  }
+  // Set active tab for any pre-existing session
+  const activeId = rift.terminal.activeId
+  if (activeId) setActiveTab(activeId)
+
+  rift.events.on('session:created', ({ id, shell }) => addTab(id, shell?.name || 'Terminal'))
+  rift.events.on('session:switched', ({ id }) => setActiveTab(id))
+  rift.events.on('session:closed', ({ id }) => removeTab(id))
+  rift.events.on('session:title-changed', ({ id, title }) => { if (title) updateTabLabel(id, title) })
 
   rift.events.on('app:phase', (phase) => {
     if (phase === 'terminal') render()
@@ -164,6 +226,14 @@ export function activate(rift) {
     p.def.visible = visible
     updateVisibility(id)
   })
+
+  // Register new-tab command + Ctrl+T binding
+  rift.commands.register('builtin:new-tab', {
+    label: 'New Tab',
+    category: 'Built-in',
+    handler: () => newTab(),
+  })
+  rift.keybindings.register('ctrl+t', 'builtin:new-tab')
 
   window.__rift_getTerminalContainer = () => {
     return window.__rift_toolbar?.container ?? document.querySelector('.terminal-container')
