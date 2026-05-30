@@ -1,4 +1,8 @@
 use serde::Serialize;
+
+#[cfg(not(target_os = "windows"))]
+use std::path::PathBuf;
+
 use std::char::decode_utf16;
 
 /// Information about a detected shell.
