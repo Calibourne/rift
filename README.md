@@ -7,7 +7,7 @@
 
 **A minimal, extensible terminal runtime.**
 
-Think Neovim, but for your terminal emulator. A 2.7 MB binary with a
+Think Neovim, but for your terminal emulator. A binary under 3 MB with a
 JavaScript plugin API. No bloat, no build steps, no configuration required
 to get started.
 
